@@ -86,6 +86,7 @@ ol.steps .ph{grid-column:2;font-size:.82rem;font-weight:700;letter-spacing:.06em
 .box ul,.box ol{margin:0;padding-left:18px}
 .box li{margin-bottom:3px}
 .box p:last-child{margin-bottom:0}
+.box.sel{background:var(--sunk);border-color:var(--accent);margin-top:4px}
 .box.no{border:2px solid var(--bad);background:var(--bad-bg);margin:10px 0}
 .box.no h4{font:700 1.1rem var(--display);color:var(--bad)}
 .box.no li{color:var(--ink);margin-bottom:5px}
@@ -585,7 +586,7 @@ function planning(){
         return h("button",{class:"chip"+(a?" done":""),type:"button","aria-pressed":String(cur===p),disabled:a?true:null,onclick:function(){ cur=p; fb=null; draw(); }},
           p.n+" · "+p.t+(a?(a==="alt"?" · alternativa ofrecida":" · hab. "+(p.pair?p.pair.join(" y "):a)):""));
       })),
-      cur?h("div",{class:"box"},h("h4",{text:cur.n}),P(cur.t+" · "+noches(cur.d)+". "+cur.x),
+      cur?h("div",{class:"box sel"},h("h4",{text:cur.n}),P(cur.t+" · "+noches(cur.d)+". "+cur.x),
         h("button",{class:"btn",type:"button",text:"No hay disponibilidad para esta reserva",onclick:function(){
           if(!cur.none){ fb=["bad","Sí hay: revisá el planning fila por fila antes de decir que no."]; return draw(); }
           fb=["alt"]; draw(); }})):null,
@@ -608,7 +609,7 @@ function planning(){
     root.appendChild(h("button",{class:"btn",type:"button",text:"Empezar de nuevo",onclick:function(){ S.plan={}; save(); cur=null; fb=null; draw(); }}));
   }
   function altBox(){
-    var b=h("div",{class:"box"},h("h4",{text:"Correcto: las tres Superior están tomadas alguna de esas noches. ¿Qué le decís al huésped?"}));
+    var b=h("div",{class:"box sel"},h("h4",{text:"Correcto: las tres Superior están tomadas alguna de esas noches. ¿Qué le decís al huésped?"}));
     [["«No hay disponibilidad.»",false,"Eso cierra la conversación. La pauta es ofrecer alternativas ante la falta de disponibilidad y agradecer siempre."],
      ["«Para esa fecha no me queda superior, pero sí una doble; y si puede venir un día antes, tengo la superior que buscaba.»",true,"Así se ofrece: otra categoría para la misma fecha, o la misma categoría corriendo un día."]].forEach(function(o){
       var bt=h("button",{class:"opt",type:"button",text:o[0],onclick:function(){ bt.classList.add(o[1]?"right":"wrong"); res.textContent=o[2]; if(o[1]){ S.plan.r5="alt"; save(); cur=null; fb=["ok","Alternativa ofrecida al Sr. Molina."]; setTimeout(draw,1400); } }});
