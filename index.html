@@ -145,8 +145,13 @@ table.sh td,table.sh th{border:1px solid var(--line)}
 .gl dt{font-weight:700;margin-top:8px}
 .gl dd{margin:0;color:var(--muted)}
 /* planning */
-.plan{width:100%;table-layout:fixed;font-size:.8rem}
-.plan th,.plan td{padding:0;text-align:center;border:1px solid var(--line);height:34px}
+.plan{width:100%;table-layout:fixed;font-size:.8rem;border-collapse:separate;border-spacing:0}
+.planwrap{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);margin:10px 0}
+.plan thead th{position:sticky;top:var(--navh,0px);z-index:2;background:var(--sunk);box-shadow:0 2px 0 var(--line)}
+.planbar{position:sticky;bottom:8px;z-index:3;background:var(--surface);border:2px solid var(--accent);border-radius:12px;padding:8px 12px;margin:8px 0;box-shadow:0 4px 18px rgba(0,0,0,.18);font-size:.86rem;line-height:1.4}
+.planbar .pb-r b{color:var(--accent)}
+.planbar .msg{margin:6px 0 0}
+.plan th,.plan td{padding:0;text-align:center;border-right:1px solid var(--line);border-bottom:1px solid var(--line);height:34px}
 .plan th{font-size:.66rem;letter-spacing:.02em}
 .plan td.o{background:var(--occ)}
 .plan td.n{background:var(--new);box-shadow:inset 0 0 0 2px var(--ink)}
@@ -591,7 +596,6 @@ function planning(){
           if(!cur.none){ fb=["bad","Sí hay: revisá el planning fila por fila antes de decir que no."]; return draw(); }
           fb=["alt"]; draw(); }})):null,
       fb&&fb[0]==="alt"?altBox():null,
-      fb&&fb[0]!=="alt"?h("div",{class:"msg "+fb[0],text:fb[1]}):null,
       hechas===PEND.length?h("div",{class:"msg ok",text:"Planning completo. Cada reserva quedó en una habitación del tipo pedido, libre todas las noches y con su pedido especial cumplido."}):null
     ));
     var tb=h("tbody"), lastF=0;
@@ -602,8 +606,11 @@ function planning(){
       tb.appendChild(h("tr",null,h("td",null,h("button",{class:"rm",type:"button","aria-label":"Habitación "+r+", "+t,onclick:function(){assign(r);}},String(r),h("small",{text:ab}))),
         DIAS.map(function(_,d){ var k=taken(r,d); return h("td",{class:k===1?"o":k===2?"n":null,"aria-label":k?"ocupada":"libre"}); })));
     });
-    root.appendChild(h("div",{class:"tbl"},h("table",{class:"plan"},h("colgroup",null,h("col",{class:"c0"})),
+    root.appendChild(h("div",{class:"planwrap"},h("table",{class:"plan"},h("colgroup",null,h("col",{class:"c0"})),
       h("thead",null,h("tr",null,h("th",{text:"Hab."}),DIAS.map(function(d){return h("th",{text:d});}))),tb)));
+    root.appendChild(h("div",{class:"planbar","aria-live":"polite"},
+      cur?h("div",{class:"pb-r"},h("b",{text:"Asignando: "}),cur.n+" · "+cur.t+" · "+noches(cur.d)+". "+cur.x):h("div",{class:"pb-r",text:"Elegí una reserva de la lista de arriba para empezar."}),
+      fb&&fb[0]!=="alt"?h("div",{class:"msg "+fb[0],text:fb[1]}):null));
     root.appendChild(h("div",{class:"legend"},h("span",null,h("i",{style:"background:var(--occ)"}),"Ocupada"),h("span",null,h("i",{style:"background:var(--new)"}),"Asignada por vos"),h("span",null,h("i",{style:"background:var(--surface)"}),"Libre")));
     root.appendChild(P("SGL sencilla · TWN doble twin · DBL doble matrimonial · TPL triple · SUP superior · acc accesible · com comunicadas. Cada columna es una noche.","lead"));
     root.appendChild(h("button",{class:"btn",type:"button",text:"Empezar de nuevo",onclick:function(){ S.plan={}; save(); cur=null; fb=null; draw(); }}));
@@ -1339,7 +1346,10 @@ function render(){
     nav.appendChild(b);
   });
   main.textContent=""; main.appendChild(VIEWS[cur]());
+  setNavH();
 }
+function setNavH(){ var n=document.getElementById("tabs"); if(n) document.documentElement.style.setProperty("--navh",n.offsetHeight+"px"); }
+window.addEventListener("resize",setNavH);
 var hsh=(location.hash||"").replace("#",""); if(VIEWS[hsh]) cur=hsh;
 render();
 })();
