@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="App de estudio de Front Office: Reservas, Check in, Check out, Conserjería y Telefonía.">
+<style>html{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>FO Planner Hotel Monserrat</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: una columna de estudio de 720px; barra de cinco pestañas fija arriba. Hermana de HK Planner, en verdes. */
+:root{
+  --bg:#f5f3ee; --surface:#ffffff; --sunk:#e3ebe4; --ink:#12241c; --muted:#43574c; --line:#c3d1c7;
+  --accent:#1c6a4c; --on-accent:#ffffff; --band:#143a2b; --on-band:#ffffff;
+  --ok:#14633f; --ok-bg:#cdeedd; --bad:#9c2620; --bad-bg:#f9d5d2; --warn-bg:#ffe6ad; --warn:#6b4700;
+  --occ:#5d7a6b; --new:#1c6a4c;
+  --display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0c1611; --surface:#15261e; --sunk:#20382d; --ink:#eef5f0; --muted:#bcd0c4; --line:#3c594a;
+  --accent:#7fd3aa; --on-accent:#0c1611; --band:#7fd3aa; --on-band:#0c1611;
+  --ok:#6fd3a5; --ok-bg:#173a2c; --bad:#f29089; --bad-bg:#43201e; --warn-bg:#3d3113; --warn:#f0cc7a;
+  --occ:#6f8c7d; --new:#7fd3aa;
+  color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0c1611; --surface:#15261e; --sunk:#20382d; --ink:#eef5f0; --muted:#bcd0c4; --line:#3c594a;
+  --accent:#7fd3aa; --on-accent:#0c1611; --band:#7fd3aa; --on-band:#0c1611;
+  --ok:#6fd3a5; --ok-bg:#173a2c; --bad:#f29089; --bad-bg:#43201e; --warn-bg:#3d3113; --warn:#f0cc7a;
+  --occ:#6f8c7d; --new:#7fd3aa;
+  color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;overflow-wrap:break-word}
+.wrap{max-width:720px;margin:0 auto;padding-inline:16px;padding-block:0 56px}
+header.top{padding-block:22px 12px}
+.brand{font-family:var(--display);font-weight:700;font-size:1.7rem;line-height:1.1;margin:0;letter-spacing:-.01em}
+.brand small{display:block;font-family:var(--body);font-weight:500;font-size:.9rem;color:var(--muted);letter-spacing:0;margin-top:6px}
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:8px;display:grid;grid-template-columns:repeat(5,1fr);gap:5px;border-bottom:2px solid var(--ink)}
+nav.tabs button{font:700 .82rem var(--body);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:8px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0}
+nav.tabs button .ic{display:block;width:24px;height:24px}
+nav.tabs button .ic svg{width:24px;height:24px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+nav.tabs button[aria-selected="true"]{color:var(--on-accent);background:var(--accent);border-color:var(--accent)}
+button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h2{font-family:var(--display);font-weight:700;font-size:1.5rem;line-height:1.2;margin:26px 0 4px;text-wrap:balance}
+h3{font-family:var(--display);font-weight:700;font-size:1.08rem;margin:36px 0 12px;text-wrap:balance;background:var(--band);color:var(--on-band);padding:9px 14px;border-radius:8px}
+h4{margin:16px 0 6px;font:700 1rem var(--body)}
+p{margin:0 0 10px;max-width:65ch}
+a{color:var(--accent)}
+.lead{color:var(--muted)}
+.ref{display:block;margin:10px 0 6px;font-size:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.seg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px;margin:14px 0 4px}
+.seg button{font:600 .9rem var(--body);border:0;background:transparent;color:var(--muted);padding:7px 16px;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.chip{font:600 .85rem var(--body);border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:6px 12px;border-radius:999px;cursor:pointer;text-align:left}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip.done{background:var(--ok-bg);color:var(--ok);border-color:var(--ok)}
+ol.steps{list-style:none;margin:10px 0;padding:0;display:flex;flex-direction:column;gap:6px;counter-reset:s}
+ol.steps li{counter-increment:s;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:start}
+ol.steps li.done{background:var(--sunk)}
+ol.steps li.done .t{color:var(--muted);text-decoration:line-through}
+ol.steps input{width:22px;height:22px;margin-top:2px;accent-color:var(--accent)}
+ol.steps .t::before{content:counter(s) ". ";font-weight:700;font-variant-numeric:tabular-nums}
+ol.steps .t{font-weight:500;min-width:0;grid-column:2}
+ol.steps .w{grid-column:2;font-size:.92rem;color:var(--muted)}
+ol.steps .w b{color:var(--accent);font-weight:600}
+ol.steps .ph+input{grid-row:2}
+ol.steps .ph{grid-column:2;font-size:.82rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.bar{height:6px;background:var(--sunk);border-radius:99px;overflow:hidden;margin:8px 0}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .2s}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{font:600 .9rem var(--body);border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 14px;border-radius:var(--r);cursor:pointer}
+.btn.pri{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.btn.mod{border-color:var(--accent);color:var(--accent);display:inline-flex;gap:8px;align-items:center;text-align:left}
+.btn.mod svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin:10px 0}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;min-width:0}
+.box h4{margin:0 0 6px;font:700 .95rem var(--body)}
+.box ul,.box ol{margin:0;padding-left:18px}
+.box li{margin-bottom:3px}
+.box p:last-child{margin-bottom:0}
+.box.no{border:2px solid var(--bad);background:var(--bad-bg);margin:10px 0}
+.box.no h4{font:700 1.1rem var(--display);color:var(--bad)}
+.box.no li{color:var(--ink);margin-bottom:5px}
+.say{border-left:4px solid var(--accent);background:var(--sunk);border-radius:0 8px 8px 0;padding:8px 12px;margin:8px 0;font-style:italic}
+.say b{font-style:normal;display:block;font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);margin:10px 0}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);background:var(--sunk)}
+td.code{font-weight:700;font-variant-numeric:tabular-nums}
+.note{background:var(--warn-bg);color:var(--warn);border-radius:var(--r);padding:10px 12px;font-size:.92rem;margin:10px 0}
+.tag{display:inline-block;font:600 .7rem var(--body);letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:99px;background:var(--sunk);color:var(--muted);white-space:nowrap}
+.tag.ej{background:var(--warn-bg);color:var(--warn)}
+.kpi{display:flex;flex-wrap:wrap;gap:18px;margin:10px 0}
+.kpi div{font-size:.85rem;color:var(--muted)}
+.kpi b{display:block;font:700 1.5rem var(--display);color:var(--ink);font-variant-numeric:tabular-nums}
+.msg{border-radius:var(--r);padding:9px 12px;font-size:.92rem;margin:8px 0}
+.msg.ok{background:var(--ok-bg);color:var(--ok)} .msg.bad{background:var(--bad-bg);color:var(--bad)}
+.msg ul{margin:6px 0 0;padding-left:18px}
+label.ck{display:flex;gap:9px;align-items:flex-start;padding:5px 0;font-weight:500}
+label.ck input{width:20px;height:20px;accent-color:var(--accent);flex:none;margin-top:2px}
+.form{display:grid;gap:10px}
+.form .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form label.f{display:grid;gap:4px;font-weight:600;font-size:.88rem;min-width:0}
+.form label.f.err input,.form label.f.err select,.form label.f.err textarea{border-color:var(--bad);border-width:2px}
+input[type=text],input[type=date],input[type=time],input[type=number],input[type=search],select,textarea{font:400 1rem var(--body);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 10px;width:100%;min-width:0}
+textarea{min-height:76px;resize:vertical}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin:10px 0}
+.q .n{font-size:.78rem;font-weight:600;color:var(--muted);letter-spacing:.05em;text-transform:uppercase}
+.q p.pq{font-weight:600;font-size:1.05rem;margin:4px 0 10px}
+.opt{display:block;width:100%;text-align:left;font:500 .95rem var(--body);background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:6px;cursor:pointer}
+.opt.right{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+.opt.wrong{background:var(--bad-bg);border-color:var(--bad);color:var(--bad)}
+.placed{list-style:decimal;padding-left:26px;margin:8px 0}
+.placed li{padding:3px 0}
+.pool{display:flex;flex-direction:column;gap:6px}
+.pool.inline{flex-direction:row;flex-wrap:wrap}
+.pool.inline .opt{width:auto;margin:0}
+.opt.shake{animation:sh .25s}
+@keyframes sh{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+@media (prefers-reduced-motion:reduce){.opt.shake{animation:none}.bar i{transition:none}}
+.sheet{background:var(--surface);border:1.5px solid var(--ink);border-radius:6px;padding:14px;margin:10px 0}
+.sh-top{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center;font-size:.8rem;color:var(--muted)}
+.sh-title{font:700 1.1rem var(--display);margin:6px 0 8px;color:var(--ink);text-transform:uppercase;letter-spacing:.03em}
+.sh-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px 16px;margin:8px 0}
+.sh-grid div{border-bottom:1px dotted var(--muted);padding-bottom:3px;min-width:0;font-weight:500}
+.sh-grid small{display:block;font:600 .68rem var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.sh-foot{font-size:.85rem;color:var(--muted);margin:10px 0 0}
+table.sh td,table.sh th{border:1px solid var(--line)}
+.models{display:flex;flex-direction:column;gap:6px;align-items:flex-start;margin:10px 0}
+.models>div{width:100%}
+/* glosario */
+.gl{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;margin:10px 0}
+.gl dl{margin:10px 0 0}
+.gl dt{font-weight:700;margin-top:8px}
+.gl dd{margin:0;color:var(--muted)}
+/* planning */
+.plan{width:100%;table-layout:fixed;font-size:.8rem}
+.plan th,.plan td{padding:0;text-align:center;border:1px solid var(--line);height:34px}
+.plan th{font-size:.66rem;letter-spacing:.02em}
+.plan td.o{background:var(--occ)}
+.plan td.n{background:var(--new);box-shadow:inset 0 0 0 2px var(--ink)}
+.plan td.fl{background:var(--sunk);font:700 .72rem var(--body);letter-spacing:.06em;text-transform:uppercase;text-align:left;padding:4px 8px;height:auto}
+.plan .rm{width:100%;height:34px;border:0;background:transparent;color:var(--ink);font:700 .8rem var(--body);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.05;padding:0}
+.plan .rm small{font:600 .58rem var(--body);color:var(--muted)}
+.plan col.c0{width:62px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.8rem;color:var(--muted);margin:8px 0}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px;border:1px solid var(--line)}
+.item{display:grid;grid-template-columns:1fr auto;gap:4px 10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;margin-bottom:6px}
+.item .d{font-weight:600;min-width:0}
+.item .m{font-size:.85rem;color:var(--muted);grid-column:1}
+.cls{display:grid;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;margin-bottom:6px}
+.cls .o{display:flex;flex-wrap:wrap;gap:4px}
+.cls .o button{font:600 .8rem var(--body);border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:6px 10px;cursor:pointer}
+.cls .o button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.cls.right{border-color:var(--ok);background:var(--ok-bg)} .cls.wrong{border-color:var(--bad);background:var(--bad-bg)}
+.cls .fx{font-size:.85rem}
+.timeline{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.timeline span{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:.88rem}
+.timeline b{font-variant-numeric:tabular-nums;color:var(--accent)}
+footer{margin-top:48px;padding-top:14px;border-top:1px solid var(--line);font-size:.82rem;color:var(--muted)}
+@media (max-width:480px){nav.tabs button{font-size:.66rem;padding:7px 1px;letter-spacing:-.01em}.form .two{grid-template-columns:1fr}th,td{padding:7px 9px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1 class="brand">FO Planner<small>Hotel Monserrat · hotel ficticio de práctica, 24 habitaciones · Front Office según las clases de la cátedra</small></h1>
+  </header>
+  <nav class="tabs" role="tablist" id="tabs"></nav>
+  <main id="main"></main>
+  <footer>
+    Material de estudio de la cátedra Departamento de Front Office y Housekeeping. El contenido sale de las presentaciones de las clases 3, 4, 6-7 y 8 (Unidades 2, 3 y 4), que siguen a Simón, M. Á., <i>Recepción: Front Office</i>, y los apuntes de Di Muro. Lo marcado como «Modelo de ejemplo» son datos inventados para practicar y no provienen de la bibliografía. Tu avance se guarda solo en este dispositivo. App hermana: <a href="https://hk-planner.vercel.app">HK Planner</a>.
+  </footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+/* ---------- utilidades ---------- */
+function h(tag, attrs){
+  var el=document.createElement(tag), i, k;
+  if(attrs) for(k in attrs){ var v=attrs[k];
+    if(v==null||v===false) continue;
+    if(k==="class") el.className=v; else if(k==="text") el.textContent=v; else if(k==="html") el.innerHTML=v;
+    else if(k.slice(0,2)==="on") el.addEventListener(k.slice(2),v); else el.setAttribute(k,v===true?"":v); }
+  for(i=2;i<arguments.length;i++){ var c=arguments[i]; if(c==null||c===false) continue;
+    if(Array.isArray(c)) c.forEach(function(x){ if(x) el.appendChild(typeof x==="string"?document.createTextNode(x):x); });
+    else el.appendChild(typeof c==="string"?document.createTextNode(c):c); }
+  return el;
+}
+var KEY="foplanner.v1", S={mode:{},done:{},best:{},res:[],plan:{},eq:[],msgs:[]};
+try{ var raw=localStorage.getItem(KEY); if(raw){ var o=JSON.parse(raw); for(var k in o) S[k]=o[k]; } }catch(e){}
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
+function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)), t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function money(n){ return "$\u00a0"+String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,"."); }
+function hhmm(){ var d=new Date(); return ("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2); }
+function iso(d){ return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2); }
+function dmy(s){ var p=String(s).split("-"); return p.length===3?p[2]+"/"+p[1]:s; }
+
+/* ---------- pestañas ---------- */
+var TABS=[
+ {id:"reservas",label:"Reservas",ic:'<rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8.8 15l2.2 2.2 4.2-4.4"/>'},
+ {id:"checkin",label:"Check in",ic:'<circle cx="8" cy="15" r="4.5"/><path d="M11.3 11.7L20 3"/><path d="M16.5 6.5l2.5 2.5M14 9l2 2"/>'},
+ {id:"checkout",label:"Check out",ic:'<path d="M6 3.5h12v17l-2.4-1.6-2.4 1.6-2.4-1.6-2.4 1.6L6 20.5z"/><path d="M9 8h6M9 11.5h6M9 15h3.5"/>'},
+ {id:"conserjeria",label:"Conserjería",ic:'<path d="M4 17.5a8 8 0 0 1 16 0z"/><path d="M2.5 20h19M12 9.5V7M10 6.5h4"/>'},
+ {id:"telefonia",label:"Telefonía",ic:'<path d="M21 16.4v2.7a1.8 1.8 0 0 1-2 1.8 17.8 17.8 0 0 1-7.800-2.800 17.500 17.500 0 0 1-5.400-5.400A17.800 17.800 0 0 1 3 4.900 1.800 1.800 0 0 1 4.800 3h2.700a1.800 1.800 0 0 1 1.800 1.500c.1.900.3 1.700.6 2.500a1.800 1.800 0 0 1-.4 1.900L8.400 10a14.400 14.400 0 0 0 5.400 5.400l1.100-1.100a1.800 1.800 0 0 1 1.900-.4c.8.3 1.600.5 2.500.6A1.800 1.800 0 0 1 21 16.400z"/>'}
+];
+var IC_DOC='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.500 3.500h8l4 4v13h-12z"/><path d="M14.500 3.500v4h4M9 12h6M9 15.500h6"/></svg>';
+
+/* ---------- datos del hotel (Modelo de ejemplo) ---------- */
+var TIPOS={ "Sencilla":{cap:1,tar:78000}, "Doble twin":{cap:2,tar:95000}, "Doble matrimonial":{cap:2,tar:95000}, "Triple":{cap:3,tar:115000}, "Superior":{cap:2,tar:125000} };
+function tipoDe(room){ var n=room%100; return n<=2?"Sencilla":n<=4?"Doble twin":n<=6?"Doble matrimonial":n===7?"Triple":"Superior"; }
+var ROOMS=[]; (function(){ for(var p=1;p<=3;p++) for(var n=1;n<=8;n++) ROOMS.push(p*100+n); })();
+
+/* ---------- glosario ---------- */
+var GLOS={
+ "Adjoining rooms":"Habitaciones contiguas: pared compartida, sin puerta interna.",
+ "ADR":"Average Daily Rate: tarifa promedio diaria efectivamente cobrada.",
+ "Bedbank (banco de camas)":"Mayorista B2B que compra cupos de habitaciones a precio neto y los redistribuye a agencias, OTAs y operadores, sin marca visible para el huésped final.",
+ "Bellboy":"Maletero: mueve el equipaje y acompaña al huésped a la habitación.",
+ "Channel manager":"Sincroniza disponibilidad y tarifas entre el PMS y los canales de venta.",
+ "City ledger":"Cuenta corriente de empresas y agencias con crédito abierto: su parte no se cobra en el mostrador, se factura.",
+ "Complimentary room":"Habitación sin cargo (cortesía).",
+ "Connecting rooms":"Habitaciones conectadas por una puerta interna.",
+ "Cross selling":"Venta de otros servicios del hotel: restaurante, spa, traslados, cocheras.",
+ "Cuenta maestra":"Folio que concentra los cargos comunes de un grupo o empresa.",
+ "Customer journey":"Mapa del recorrido del huésped por cada punto de contacto.",
+ "Daily rate":"Tarifa diaria.",
+ "Day use":"Uso de la habitación por horas, sin pernocte.",
+ "Despierte (wake up call)":"Llamado a la habitación a la hora pedida por el huésped.",
+ "Doorman":"Portero: recibe y despide al huésped en la puerta; primer filtro de seguridad.",
+ "Early check in":"Ingreso antes del horario oficial; según disponibilidad y con posible cargo.",
+ "Express check out":"La cuenta se cierra contra la tarjeta ya autorizada y la factura se envía por email.",
+ "Folio":"Detalle organizado de cargos, pagos, créditos y ajustes de una cuenta.",
+ "Forecast":"Pronóstico de ocupación para fechas futuras: llegadas, salidas y huéspedes en casa.",
+ "GDS":"Global Distribution System, usado por agencias (Amadeus, Sabre).",
+ "House use":"Habitación ocupada por personal o necesidades internas.",
+ "In house":"Huésped alojado en este momento: ya hizo el check in y todavía no el check out.",
+ "Incidentals":"Consumos personales (minibar, bar, lavandería) que quedan a cargo del huésped.",
+ "Late check out":"Salida después del horario oficial; según disponibilidad y con posible cargo.",
+ "Les Clefs d'Or":"Asociación profesional de conserjes de grandes hoteles; su distintivo son las llaves cruzadas doradas.",
+ "Libro de novedades":"Registro escrito de lo que pasa en el turno; hoy, un log digital dentro del PMS.",
+ "Luggage room":"Depósito de equipaje: cuarto con llave, de acceso restringido.",
+ "Motor de reservas":"Sistema de venta online del sitio propio del hotel.",
+ "Night audit":"Auditoría nocturna: cierre del día operativo.",
+ "No show":"Reserva que nunca se presenta ni avisa; si estaba garantizada, se cobra.",
+ "NPS":"Net Promoter Score: indicador de recomendación.",
+ "OTA":"Online Travel Agency: agencia de viajes online (Booking, Expedia).",
+ "Overbooking":"Se reservan más habitaciones de las disponibles.",
+ "Overstay":"El huésped se queda más noches de las reservadas.",
+ "PMS":"Property Management System: sistema central de gestión hotelera.",
+ "POS":"Point of Sale: la terminal con la que el hotel procesa pagos con tarjeta y preautorizaciones.",
+ "Pre asignación":"Elegir la habitación concreta para cada llegada antes del arribo.",
+ "Pre registro":"Cargar los datos del huésped antes de que llegue (hoy, el pre check in online).",
+ "Preautorización":"Retención de un monto estimado en la tarjeta: no es un cobro y se libera al hacer el check out.",
+ "Release (fecha de)":"Plazo límite para enviar la rooming list y confirmar el cupo de un grupo.",
+ "RevPAR":"Ingreso por habitación disponible (ADR × % de ocupación).",
+ "Room & tax":"Alojamiento e impuestos de cada habitación ocupada, que el auditor postea cada noche.",
+ "Room status":"Estado de la habitación; después de la salida pasa a sucia y entra a limpieza.",
+ "Rooming list":"Listado de un grupo con nombres y distribución por habitación, enviado antes del arribo.",
+ "Skipper":"Huésped que se retira sin pagar.",
+ "Sleep out":"Huésped registrado que no pernoctó en la habitación.",
+ "Speech":"Guion de identificación con el que se atiende cada llamada.",
+ "Split folio":"Una misma habitación con dos folios: uno al cliente corporativo y otro al huésped.",
+ "Tarifa rack":"Tarifa de mostrador: la máxima publicada, sin descuentos.",
+ "Troquel":"Comprobante numerado que identifica cada bulto; una copia queda en el equipaje y otra se entrega al huésped.",
+ "Understay":"El huésped se va antes de lo reservado.",
+ "Upgrade":"Pasar al huésped a una categoría superior, por lo general sin cobrarle la diferencia.",
+ "Upselling":"Vender la categoría superior cobrando la diferencia.",
+ "Valet parking":"Recibe, estaciona y custodia el vehículo del huésped.",
+ "Voucher":"Documento de agencia que acredita servicios prepagados por el pasajero.",
+ "Walk in":"Huésped que llega sin reserva previa.",
+ "Walking":"Derivar a otro hotel a un huésped con reserva cuando se concreta la sobreventa."
+};
+var GTAB={
+ reservas:["Adjoining rooms","ADR","Bedbank (banco de camas)","Channel manager","City ledger","Complimentary room","Connecting rooms","Cross selling","Cuenta maestra","Daily rate","Day use","Forecast","GDS","House use","Motor de reservas","No show","OTA","Overbooking","PMS","Release (fecha de)","RevPAR","Rooming list","Tarifa rack","Upgrade","Upselling","Voucher","Walk in","Walking"],
+ checkin:["Cross selling","Cuenta maestra","Early check in","Folio","In house","No show","Overbooking","Overstay","PMS","POS","Pre asignación","Pre registro","Preautorización","Rooming list","Skipper","Sleep out","Understay","Upgrade","Upselling","Voucher","Walk in"],
+ checkout:["ADR","Channel manager","City ledger","Cuenta maestra","Customer journey","Express check out","Folio","Incidentals","Late check out","Night audit","NPS","PMS","Preautorización","RevPAR","Room & tax","Room status","Skipper","Split folio","Voucher"],
+ conserjeria:["Bellboy","Doorman","In house","Les Clefs d'Or","Libro de novedades","Luggage room","Troquel","Valet parking"],
+ telefonia:["Despierte (wake up call)","In house","Libro de novedades","PMS","Speech"]
+};
+
+/* ---------- componentes ---------- */
+function seg(tab){
+  var m=S.mode[tab]||"estudiar";
+  function b(id,l){ return h("button",{type:"button","aria-pressed":String(m===id),text:l,onclick:function(){S.mode[tab]=id;save();render();window.scrollTo(0,0);}}); }
+  return h("div",{class:"seg",role:"group","aria-label":"Modo"},b("estudiar","Estudiar"),b("practicar","Practicar"));
+}
+function H3(t){ return h("h3",{text:t}); }
+function P(t,cls){ return h("p",{text:t,class:cls||null}); }
+function ref(t){ return h("span",{class:"ref",text:t}); }
+function ej(){ return h("span",{class:"tag ej",text:"Modelo de ejemplo"}); }
+function say(t,l){ return h("div",{class:"say"},h("b",{text:l||"Cómo suena"}),t); }
+function note(t){ return h("div",{class:"note",text:t}); }
+function grid(){ return h("div",{class:"grid2"},Array.prototype.slice.call(arguments)); }
+function table(head,rows,codeCol){
+  return h("div",{class:"tbl"},h("table",null,
+    h("thead",null,h("tr",null,head.map(function(x){return h("th",{text:x});}))),
+    h("tbody",null,rows.map(function(r){return h("tr",null,r.map(function(c,i){return h("td",{class:(codeCol&&i===0)?"code":null,text:c});}));}))));
+}
+function box(title,items,ordered){
+  return h("div",{class:"box"},h("h4",{text:title}),
+    typeof items==="string"?h("p",{text:items}):h(ordered?"ol":"ul",null,items.map(function(x){return h("li",{text:x});})));
+}
+function losNo(items){ return h("div",{class:"box no"},h("h4",{text:"Los No"}),h("ul",null,items.map(function(x){return h("li",{text:x});}))); }
+/* procedimiento con casillas: list = [texto, porqué, fase?] */
+function steps(key,list){
+  var done=S.done[key]||[], root=h("div"), bar=h("i"), cnt=h("span",{class:"lead"});
+  function upd(){ var n=0; list.forEach(function(_,i){ if(done[i]) n++; }); bar.style.width=(100*n/list.length)+"%"; cnt.textContent=n+" de "+list.length+" pasos tildados"; }
+  var ol=h("ol",{class:"steps"},list.map(function(s,i){
+    var cb=h("input",{type:"checkbox","aria-label":"Paso "+(i+1)}); cb.checked=!!done[i];
+    var li=h("li",{class:done[i]?"done":null},s[2]?h("span",{class:"ph",text:s[2]}):null,cb,h("span",{class:"t",text:s[0]}),
+      s[1]?h("span",{class:"w"},h("b",{text:"Por qué: "}),s[1]):null);
+    cb.addEventListener("change",function(){ done[i]=cb.checked; S.done[key]=done; save(); li.classList.toggle("done",cb.checked); upd(); });
+    return li; }));
+  root.appendChild(h("div",{class:"bar"},bar)); root.appendChild(cnt); root.appendChild(ol);
+  root.appendChild(h("button",{class:"btn",type:"button",text:"Destildar todo",onclick:function(){ S.done[key]=[]; save(); render(); }}));
+  upd(); return root;
+}
+/* modelo que se abre con un clic */
+function modelo(label,fn){
+  var holder=h("div"), open=false, b=h("button",{class:"btn mod",type:"button","aria-expanded":"false"});
+  b.innerHTML=IC_DOC; b.appendChild(document.createTextNode(label));
+  b.addEventListener("click",function(){ open=!open; b.setAttribute("aria-expanded",String(open)); holder.textContent=""; if(open) holder.appendChild(fn()); });
+  return h("div",null,b,holder);
+}
+function modelos(){ return h("div",{class:"models"},Array.prototype.slice.call(arguments)); }
+function sheet(title,sub,isEj){
+  var s=h("div",{class:"sheet"},h("div",{class:"sh-top"},h("span",{text:"Hotel Monserrat"}),isEj===true?ej():isEj===false?h("span",{class:"tag",text:"Tomado de la clase"}):null),h("div",{class:"sh-title",text:title}));
+  if(sub) s.appendChild(P(sub,"lead"));
+  for(var i=3;i<arguments.length;i++) if(arguments[i]) s.appendChild(arguments[i]);
+  return s;
+}
+function fields(pairs){ return h("div",{class:"sh-grid"},pairs.map(function(p){ return h("div",null,h("small",{text:p[0]}),p[1]||" "); })); }
+function glosario(tab,nombre){
+  var terms=GTAB[tab], open=false, panel=h("div"), b=h("button",{class:"btn mod",type:"button","aria-expanded":"false"});
+  b.innerHTML=IC_DOC; b.appendChild(document.createTextNode("Glosario de "+nombre+" ("+terms.length+" términos)"));
+  function draw(f){
+    var dl=h("dl"); f=(f||"").toLowerCase(); var n=0;
+    terms.forEach(function(t){ if(f&&(t+" "+GLOS[t]).toLowerCase().indexOf(f)<0) return; n++; dl.appendChild(h("dt",{text:t})); dl.appendChild(h("dd",{text:GLOS[t]})); });
+    if(!n) dl.appendChild(h("dd",{text:"Ningún término coincide con la búsqueda."}));
+    return dl;
+  }
+  b.addEventListener("click",function(){
+    open=!open; b.setAttribute("aria-expanded",String(open)); panel.textContent=""; if(!open) return;
+    var inp=h("input",{type:"search",placeholder:"Buscar un término…","aria-label":"Buscar en el glosario"}), list=h("div",null,draw(""));
+    inp.addEventListener("input",function(){ list.textContent=""; list.appendChild(draw(inp.value)); });
+    panel.appendChild(h("div",{class:"gl"},inp,list));
+  });
+  return h("div",{style:"margin:12px 0 0"},b,panel);
+}
+/* preguntas de repaso */
+function quiz(tab){
+  var qs=shuffle(QUIZ[tab]), i=0, score=0, root=h("div");
+  function show(){
+    root.textContent="";
+    if(i>=qs.length){
+      var best=Math.max(S.best[tab]||0,score); S.best[tab]=best; save();
+      root.appendChild(h("div",{class:"q"},h("p",{class:"pq",text:"Resultado: "+score+" de "+qs.length}),
+        h("p",{class:"lead",text:"Tu mejor marca en esta sección: "+best+" de "+qs.length+"."}),
+        h("button",{class:"btn pri",type:"button",text:"Volver a intentar",onclick:function(){qs=shuffle(QUIZ[tab]);i=0;score=0;show();}})));
+      return;
+    }
+    var q=qs[i], answered=false, fb=h("div"), ol=q.o||["Verdadero","Falso"], opts=ol.map(function(t,ix){
+      var b=h("button",{class:"opt",type:"button",text:t,onclick:function(){
+        if(answered) return; answered=true;
+        if(ix===q.a){ b.classList.add("right"); score++; } else { b.classList.add("wrong"); opts[q.a].classList.add("right"); }
+        fb.appendChild(h("p",{class:"lead",text:q.e}));
+        fb.appendChild(h("button",{class:"btn pri",type:"button",text:i+1<qs.length?"Siguiente":"Ver resultado",onclick:function(){i++;show();}}));
+      }}); return b; });
+    root.appendChild(h("div",{class:"q"},h("div",{class:"n",text:"Pregunta "+(i+1)+" de "+qs.length+(q.o?"":" · verdadero o falso")}),h("p",{class:"pq",text:q.q}),opts,fb));
+  }
+  show(); return root;
+}
+/* ordenar pasos: items = [texto,…] en el orden correcto */
+function orderGame(titulo,items,inline){
+  var root=h("div",{class:"q"}), placed=[], errors=0, pool;
+  function txt(){ return "Tocá el paso que sigue. Colocados "+placed.length+" de "+items.length+" · errores: "+errors; }
+  function draw(){
+    root.textContent="";
+    root.appendChild(h("div",{class:"n",text:"Ordená: "+titulo}));
+    var lead=h("p",{class:"lead",text:txt()}); root.appendChild(lead);
+    if(placed.length) root.appendChild(inline?h("p",{class:"say",text:"«"+placed.map(function(ix){return items[ix];}).join(", ")+"»"}):h("ol",{class:"placed"},placed.map(function(ix){return h("li",{text:items[ix]});})));
+    if(placed.length===items.length){
+      root.appendChild(h("div",{class:"msg ok",text:errors===0?"Secuencia completa sin errores.":"Secuencia completa con "+errors+" error"+(errors===1?"":"es")+"."}));
+      root.appendChild(h("button",{class:"btn",type:"button",text:"Mezclar de nuevo",onclick:start})); return;
+    }
+    root.appendChild(h("div",{class:"pool"+(inline?" inline":"")},pool.map(function(ix){
+      var b=h("button",{class:"opt",type:"button",text:items[ix],onclick:function(){
+        if(ix===placed.length){ placed.push(ix); pool=pool.filter(function(x){return x!==ix;}); draw(); }
+        else { errors++; b.classList.remove("shake"); void b.offsetWidth; b.classList.add("shake"); b.classList.add("wrong"); lead.textContent=txt(); }
+      }}); return b; })));
+  }
+  function start(){ placed=[]; errors=0; pool=shuffle(items.map(function(_,i){return i;})); draw(); }
+  start(); return root;
+}
+/* caso con decisiones: pasos = {s:situación, o:[opciones], a:índice, e:explicación} */
+function caseGame(key,titulo,pasos){
+  var root=h("div"), i=0, score=0;
+  function show(){
+    root.textContent="";
+    if(i>=pasos.length){
+      var best=Math.max(S.best[key]||0,score); S.best[key]=best; save();
+      root.appendChild(h("div",{class:"q"},h("p",{class:"pq",text:"Caso resuelto: "+score+" de "+pasos.length+" decisiones correctas"}),
+        h("p",{class:"lead",text:"Tu mejor marca en este caso: "+best+" de "+pasos.length+"."}),
+        h("button",{class:"btn pri",type:"button",text:"Resolverlo de nuevo",onclick:function(){i=0;score=0;show();}})));
+      return;
+    }
+    var p=pasos[i], answered=false, fb=h("div"), order=shuffle(p.o.map(function(_,x){return x;})), btns={};
+    var opts=order.map(function(ix){
+      var b=h("button",{class:"opt",type:"button",text:p.o[ix],onclick:function(){
+        if(answered) return; answered=true;
+        if(ix===p.a){ b.classList.add("right"); score++; } else { b.classList.add("wrong"); btns[p.a].classList.add("right"); }
+        fb.appendChild(h("p",{class:"lead",text:p.e}));
+        fb.appendChild(h("button",{class:"btn pri",type:"button",text:i+1<pasos.length?"Seguir":"Ver resultado",onclick:function(){i++;show();}}));
+      }}); btns[ix]=b; return b; });
+    root.appendChild(h("div",{class:"q"},h("div",{class:"n",text:titulo+" · decisión "+(i+1)+" de "+pasos.length}),h("p",{class:"pq",text:p.s}),opts,fb));
+  }
+  show(); return root;
+}
+/* clasificar: items = [texto, índiceCategoría, explicación?] */
+function classGame(titulo,cats,items,intro){
+  var root=h("div",{class:"q"}), sel, list;
+  function draw(checked){
+    root.textContent="";
+    root.appendChild(h("div",{class:"n",text:titulo}));
+    if(intro) root.appendChild(P(intro,"lead"));
+    var ok=0;
+    list.forEach(function(it,n){
+      var good=sel[n]===it[1]; if(good) ok++;
+      var row=h("div",{class:"cls"+(checked?(good?" right":" wrong"):"")},h("div",{text:it[0]}),
+        h("div",{class:"o"},cats.map(function(c,ci){ return h("button",{type:"button","aria-pressed":String(sel[n]===ci),text:c,disabled:checked?true:null,onclick:function(){ sel[n]=ci; draw(false); }}); })),
+        checked&&!good?h("div",{class:"fx",text:"Corresponde: "+cats[it[1]]+(it[2]?". "+it[2]:".")}):null);
+      root.appendChild(row);
+    });
+    if(checked){
+      root.appendChild(h("div",{class:"msg "+(ok===list.length?"ok":"bad"),text:"Acertaste "+ok+" de "+list.length+"."}));
+      root.appendChild(h("button",{class:"btn",type:"button",text:"Probar de nuevo",onclick:start}));
+    } else {
+      var faltan=list.filter(function(_,n){return sel[n]==null;}).length;
+      root.appendChild(h("button",{class:"btn pri",type:"button",text:"Corregir",disabled:faltan?true:null,onclick:function(){draw(true);}}));
+      if(faltan) root.appendChild(h("span",{class:"lead",text:" Te faltan "+faltan+"."}));
+    }
+  }
+  function start(){ list=shuffle(items); sel=list.map(function(){return null;}); draw(false); }
+  start(); return root;
+}
+/* campo de formulario */
+function field(label,input,full){ var l=h("label",{class:"f"},label,input); l._in=input; return l; }
+function sel(opts,ph){ var s=h("select",null,h("option",{value:"",text:ph||"Elegí…"}),opts.map(function(o){ return h("option",{value:o,text:o}); })); return s; }
+
+/* ---------- preguntas de repaso (con «o» = opción múltiple; sin «o» = verdadero/falso, a:0 verdadero, a:1 falso) ---------- */
+var QUIZ={
+ reservas:[
+  {q:"¿Cuáles son los tres objetivos centrales de Reservas?",o:["Máxima ocupación a la mejor tarifa, registro de todas las reservas y coordinación interdepartamental","Cobrar, facturar y cerrar la caja del día","Recibir al huésped, registrarlo y entregarle la llave","Atender llamadas, tomar mensajes y hacer despiertes"],a:0,e:"Reservas es la puerta de entrada comercial del hotel y la información que carga la usan Recepción, Housekeeping y AA&BB."},
+  {q:"Una reserva no garantizada se retiene hasta una hora límite (habitualmente las 18 h); si el huésped no llega ni garantiza, la habitación se libera a la venta.",a:0,e:"Verdadero. Por eso la hora estimada de llegada es un dato que no puede faltar."},
+  {q:"¿Qué diferencia a la tarifa neta de la comisionable?",o:["En la neta el intermediario recibe una tarifa reducida y la remarca él mismo","En la neta el hotel paga una comisión sobre la tarifa publicada","La neta incluye impuestos y la comisionable no","La neta es solo para grupos"],a:0,e:"En la comisionable el huésped paga la tarifa publicada y el hotel le paga una comisión al intermediario."},
+  {q:"El plan MAP (media pensión) incluye:",o:["Solo el alojamiento","Alojamiento y desayuno","Desayuno más una comida (almuerzo o cena)","Desayuno, almuerzo y cena"],a:2,e:"EP: solo alojamiento. CP: con desayuno. MAP: desayuno más una comida. AP: pensión completa."},
+  {q:"La tarifa rack es la que más se vende en el hotel.",a:1,e:"Falso. La rack o de mostrador es la máxima publicada, sin descuentos: casi nunca se vende y existe como techo de referencia."},
+  {q:"Dos habitaciones contiguas unidas por una puerta interna son:",o:["Adyacentes","Contiguas (adjoining)","Comunicadas (connecting)","Doble-doble"],a:2,e:"Adyacentes: próximas, en el mismo piso. Contiguas: pared compartida, sin comunicación. Comunicadas: con puerta interna."},
+  {q:"En una reserva grupal, ¿qué es la fecha de release?",o:["El día en que llega el grupo","El plazo límite para enviar la rooming list y confirmar el cupo","El día en que se factura a la agencia","La fecha en que vence la tarifa rack"],a:1,e:"Pasada esa fecha, las habitaciones no confirmadas vuelven a la venta."},
+  {q:"Según la evidencia vista en clase, ¿cómo conviene enunciar la tarifa?",o:["Solo el total de la estadía, sin detalle","Por noche, con el precio total desde el inicio y explicando el motivo del precio","Sin impuestos, que se informan al check out","Como recargo sobre la tarifa más baja"],a:1,e:"Cotizar por noche, informar el total con impuestos desde la primera cotización y explicar por qué cambia la tarifa mejora la justicia percibida."},
+  {q:"El voucher prueba que el huésped ya pagó en la agencia los servicios que detalla; lo que el voucher no cubre se le cobra al huésped al check out.",a:0,e:"Verdadero. Aclararlo al llegar evita el conflicto más común con pasajeros de agencia."},
+  {q:"¿Cuál es la mejor herramienta para prevenir el no-show silencioso?",o:["Revenue management y remarketing normales","Garantía de pago y un recordatorio con opciones de confirmar, modificar o cancelar","Subir la tarifa rack","Cerrar la venta en las OTAs"],a:1,e:"El recordatorio convierte no-shows silenciosos en cancelaciones a tiempo, que todavía se pueden revender."},
+  {q:"¿Qué diferencia al planning de ocupación del forecast?",o:["El planning es un cuadro habitaciones × días; el forecast proyecta ocupación, llegadas, salidas y huéspedes en casa","Son dos nombres de la misma planilla","El forecast es la ficha de cada reserva","El planning lo arma el auditor nocturno"],a:0,e:"El planning es el antecesor manual del calendario del PMS (tape chart). El forecast es una herramienta interdepartamental."},
+  {q:"Si se acordó todo por teléfono, la reserva queda cerrada aunque no se envíe el mail de confirmación.",a:1,e:"Falso. Sin confirmación escrita, con número de reserva y condiciones, la reserva no está cerrada."}
+ ],
+ checkin:[
+  {q:"¿Cuál es el turno de las llegadas?",o:["Mañana, de 7 a 15 h","Tarde, de 15 a 23 h","Noche, de 23 a 7 h","No hay un turno de llegadas"],a:1,e:"Mañana: salidas. Tarde: llegadas, upselling y disponibilidad. Noche: control y auditoría."},
+  {q:"El pase de turno puede ser solo verbal si los dos recepcionistas se conocen bien.",a:1,e:"Falso. Se registra en el libro de novedades o en el sistema: lo que no está escrito, no existe. Lo verbal refuerza, no reemplaza."},
+  {q:"¿Qué resume la regla R · A · D del check in?",o:["Reservar, Asignar, Desayunar","Recibo, Aseguro, Despido: 3 + 3 + 4 pasos en 4 minutos","Registrar, Auditar, Depositar","Recibir, Avisar, Derivar"],a:1,e:"Recibir (pasos 1 a 3), asegurar (4 a 6) y despedir (7 a 10), con una meta de mostrador de 4 minutos."},
+  {q:"¿Quién completa la ficha de registro?",o:["El recepcionista, preguntando en voz alta","El propio huésped","El auditor nocturno","El bellboy"],a:1,e:"La completa el huésped: refuerza el contrato de hospedaje, evita preguntas incómodas en público y protege su discreción."},
+  {q:"Con el criterio de Di Muro, ¿cuánto se garantiza por 4 noches a US$ 100?",o:["US$ 400","US$ 450","US$ 600","US$ 800"],a:2,e:"4 × 100 = 400 de alojamiento, más 50 % previsto de extras (200): US$ 600."},
+  {q:"En una reserva EP (Extras Pax), ¿por qué se le pide garantía al huésped?",o:["Por el alojamiento y los extras","Solo por los extras","Por nada","Solo por el alojamiento"],a:1,e:"El alojamiento lo garantiza el cliente (empresa o agencia); el huésped, sus extras."},
+  {q:"Si la reserva es FC (Full Credit), en el check in no se verifica nada.",a:1,e:"Falso. No se le pide garantía al huésped, pero sí se verifica el documento y la carta de crédito de la empresa."},
+  {q:"Llega un walk in. ¿Qué corresponde?",o:["Cotizar tarifa rack u otra autorizada, verificar disponibilidad y exigir garantía","Alojarlo sin garantía porque no tiene reserva","Derivarlo siempre a otro hotel","Aplicarle la tarifa corporativa"],a:0,e:"El walk in llega sin reserva: se cotiza, se verifica disponibilidad y se exige garantía de pago."},
+  {q:"Al controlar el documento, ¿qué se mira primero?",o:["El tipo y número","La vigencia","La foto y la persona","El domicilio"],a:2,e:"El orden es: la foto y la persona, el nombre exacto, la vigencia y por último tipo y número, que recién ahí se transcribe."},
+  {q:"¿Qué es un skipper?",o:["Un huésped que llega sin reserva","Un huésped que se retira sin pagar","Un huésped que no pernoctó en su habitación","Una reserva que no se presenta"],a:1,e:"Es la razón por la que la garantía de estadía no es opcional."},
+  {q:"Ante un no show de una reserva garantizada, el auditor nocturno emite el listado y aplica el cargo.",a:0,e:"Verdadero. Además se libera la habitación para la venta del día siguiente y queda registrado en el perfil."},
+  {q:"¿Qué pasa cuando se da el check in en el sistema?",o:["La habitación pasa a in house y se habilitan los cargos a la cuenta","Se emite la factura","La habitación pasa a sucia","Se libera la preautorización"],a:0,e:"Se hace durante el check in, junto con completar el perfil del huésped."}
+ ],
+ checkout:[
+  {q:"¿En qué franja está el pico de trabajo del turno mañana?",o:["De 8 a 11, con los check out","De 15 a 18, con los check in","De 23 a 1, con la auditoría","De 12 a 15, con los late check out"],a:0,e:"El turno mañana es el de las salidas: el huésped deja la habitación y quiere irse rápido."},
+  {q:"Antes de imprimir el estado de cuenta, ¿qué tiene que estar hecho?",o:["La factura emitida","Todos los consumos y extras posteados","La encuesta respondida","La habitación limpia"],a:1,e:"Minibar, lavandería, restaurante, spa y llamadas: todo lo consumido debe estar posteado antes de imprimir."},
+  {q:"Al recolectar las llaves, ¿qué más hay que hacer?",o:["Guardarlas para el próximo huésped sin más","Dar de baja la tarjeta magnética para que no siga abriendo la habitación","Entregárselas a Housekeeping","Nada"],a:1,e:"Es el paso 9 del check out."},
+  {q:"¿A quién se le emite factura A y a quién B?",o:["A a consumidores finales, B a responsables inscriptos","A a responsables inscriptos, B a consumidores finales","A a extranjeros, B a argentinos","A a grupos, B a individuales"],a:1,e:"Quién paga define a nombre de quién sale la factura, y su condición fiscal define la letra."},
+  {q:"Grupo de 20 habitaciones con reserva FC. ¿Cuántos folios se abren?",o:["1","2","20","21"],a:3,e:"Una cuenta maestra para el alojamiento, que paga la agencia, y 20 folios de extras, uno por habitación."},
+  {q:"En un late check out imprevisto, primero se carga el costo adicional y después se le avisa al huésped.",a:1,e:"Falso. Se llama al cliente, se le pide la hora estimada de salida y se informa el costo adicional antes de aplicarlo."},
+  {q:"¿Cuál es el primer paso ante una queja?",o:["Compensar","Derivar a mantenimiento","Escuchar sin interrumpir","Explicar la política del hotel"],a:2,e:"El huésped necesita sentirse escuchado antes que resuelto."},
+  {q:"Un huésped con un problema resuelto rápido y bien puede terminar más leal que uno que nunca tuvo inconvenientes.",a:0,e:"Verdadero. Es la paradoja de la recuperación del servicio: exige velocidad, apropiación, compensación proporcional y seguimiento."},
+  {q:"¿Qué es postear el room & tax?",o:["Cargar el alojamiento e impuestos de cada habitación ocupada esa noche","Cobrar el minibar","Emitir la factura A","Dar de baja las llaves"],a:0,e:"Lo hace el auditor nocturno al cerrar el día; hoy el PMS lo automatiza en el night audit run."},
+  {q:"El huésped se fue y quedó un cargo sin pagar. ¿Qué pasa con ese cargo?",o:["Se anula","Pasa a cuentas a cobrar y se reclama, con la documentación como respaldo","Se le carga al próximo huésped","Se imputa a cortesías"],a:1,e:"A cortesías solo se imputan invitaciones y descuentos, siempre con autorización."},
+  {q:"¿Qué es un split folio?",o:["Dos habitaciones con un mismo folio","Una misma habitación con dos folios, típico de una reserva EP","Un folio pagado con dos tarjetas","La cuenta maestra de un grupo"],a:1,e:"Alojamiento, impuestos y desayuno van al folio empresa; minibar, bar y lavandería, al folio huésped."},
+  {q:"Un folio = una factura.",a:0,e:"Verdadero. Por eso conviene definir la distribución al abrir la cuenta, no al cobrar."}
+ ],
+ conserjeria:[
+  {q:"¿Cómo se estructura la Conserjería?",o:["El conserje a cargo, con bellboy, doorman y valet parking","El jefe de recepción, con cajeros y auditor","Las telefonistas","El jefe de reservas y su personal"],a:0,e:"Es el departamento de servicios al huésped: está en el lobby y brinda información y ayuda durante toda la estadía."},
+  {q:"¿Dónde se guarda el equipaje en tránsito?",o:["Detrás del mostrador","En el pasillo, a la vista","En un cuarto con llave, de acceso restringido al personal del sector","En la habitación que quedó libre"],a:2,e:"El hotel asume la custodia de un bien ajeno: por eso el procedimiento es estricto."},
+  {q:"Si el huésped perdió el comprobante, alcanza con que describa la valija para devolvérsela.",a:1,e:"Falso. Cada bulto se identifica con un troquel y se entrega copia al huésped: sin ese comprobante no se devuelve el equipaje."},
+  {q:"Llega un paquete para un huésped con reserva que todavía no llegó. ¿Qué hacés?",o:["Lo devolvés al remitente","Lo guardás junto a su reserva","Lo dejás en una habitación libre","Lo abrís para ver qué es"],a:1,e:"Si aún no llegó, se guarda junto a su reserva; si ya se retiró, se intenta el reenvío."},
+  {q:"¿Quién es el primer filtro de seguridad del hotel?",o:["El conserje","El bellboy","El doorman","El valet"],a:2,e:"El doorman controla quién entra: es la primera y la última cara del hotel."},
+  {q:"¿Quién acompaña al huésped a la habitación y le muestra luces, aire, caja de seguridad y minibar?",o:["El doorman","El bellboy","El valet","El recepcionista"],a:1,e:"El bellboy traslada el equipaje y acompaña al huésped; también avisa a Recepción cuándo el cuarto quedó libre."},
+  {q:"¿Qué hace el valet antes de mover el auto?",o:["Registra estado y ubicación","Lava el auto","Pide la tarjeta de crédito","Nada: lo mueve directamente"],a:0,e:"Es el respaldo ante un reclamo. Además entrega el ticket y custodia las llaves en tablero cerrado y bajo registro."},
+  {q:"La conserjería es la única función del Front Office con asociación profesional propia.",a:0,e:"Verdadero: Les Clefs d'Or. Su distintivo son las llaves cruzadas doradas en la solapa."},
+  {q:"¿Cómo se entrega la correspondencia al huésped?",o:["Se deja bajo la puerta","Contra firma","Se la da a quien la pida","Por debajo del mostrador"],a:1,e:"Los cuatro pasos: verificar el destinatario, registrar en la planilla, custodiar en lugar seguro y entregar contra firma."},
+  {q:"En ausencia de Telefonía, el conserje maneja los despiertes.",a:0,e:"Verdadero. Es una de las tareas del conserje."}
+ ],
+ telefonia:[
+  {q:"¿Cuándo hay que atender una llamada?",o:["Antes del tercer ring","Después del quinto ring","Cuando se termina lo que se estaba haciendo","No importa"],a:0,e:"Contestar a tiempo es la primera pauta de atención telefónica."},
+  {q:"¿Cuál es el orden del speech para una llamada externa?",o:["Nombre de quien atiende, hotel, momento del día, ayuda","Momento del día, nombre del hotel, nombre de quien atiende, ofrecimiento de ayuda","Nombre del hotel, ofrecimiento de ayuda, momento del día","Ofrecimiento de ayuda, nombre de quien atiende"],a:1,e:"«Buenas tardes, Hotel Monserrat, habla Valeria, ¿en qué lo puedo ayudar?»"},
+  {q:"En una llamada interna, ¿qué reemplaza al nombre del hotel?",o:["El número de interno","El nombre del departamento","El apellido de quien atiende","Nada"],a:1,e:"«Buenas tardes, Telefonía, habla Valeria, ¿en qué lo puedo ayudar?»"},
+  {q:"Si quien llama dice ser familiar del huésped, se le puede dar el número de habitación.",a:1,e:"Falso. Nunca se brindan datos del huésped: número de habitación, horarios ni si está o no alojado. Si no contesta, se toma un mensaje."},
+  {q:"¿Cuánto puede durar una espera en línea?",o:["No más de 30 segundos; después se informa y se vuelve a preguntar","Hasta 2 minutos","Lo que haga falta","5 minutos con música"],a:0,e:"Pasado ese tiempo se retoma la llamada, se informa y se vuelve a preguntar."},
+  {q:"¿Cómo se anota un mensaje?",o:["Resumido, con las ideas principales","Textual, nunca interpretado ni resumido","Solo el nombre de quien llamó","De memoria, al final del turno"],a:1,e:"Y se repite para verificar los datos antes de cortar."},
+  {q:"Después del despierte, ¿qué se ofrece?",o:["Repetir el llamado a los 5 minutos","El desayuno en la habitación","Un late check out","Nada"],a:0,e:"Los tres pasos: anotar y programar, llamar en horario, ofrecer repetir."},
+  {q:"La llamada se transfiere apenas se marca el interno, para no hacer esperar a quien llama.",a:1,e:"Falso. Se transfiere solo después de que atienden del otro lado."},
+  {q:"El huésped pidió «No molestar» para sus llamadas. ¿Qué corresponde?",o:["Pasarle solo las llamadas urgentes","Tomar mensaje de todos, registrar por cuánto tiempo rige y comunicarlo al turno siguiente","Desconectar el teléfono de la habitación","Decirle a quien llama que el huésped se fue"],a:1,e:"Y jamás se comunica una llamada sin consultar si el huésped la acepta."},
+  {q:"¿Qué campos lleva la planilla de despiertes?",o:["Habitación, horario, nombre del huésped, recepcionista a cargo y quién llama","Solo habitación y horario","Nombre, documento y tarjeta","Remitente, fecha y firma"],a:0,e:"Además de anotarlo, se programa la alarma: doble respaldo."},
+  {q:"La sonrisa «se escucha» en el tono de voz.",a:0,e:"Verdadero. La pauta es sonreír, no reír, con un tono claro y calmo, ni monótono ni exaltado."},
+  {q:"Con la telefonía IP y el WhatsApp, ¿qué sigue 100 % vigente?",o:["El conmutador y el tarifador","Las llamadas por cobrar","El speech, el tono y las reglas de privacidad del huésped","El télex"],a:2,e:"El speech, la identificación y la protección de datos aplican igual en un chat que en una llamada."}
+ ]
+};
+
+/* ================= pestaña 1: RESERVAS (Clases 3 y 4) ================= */
+var R_STEPS=[
+ ["Solicitar la información: fechas de entrada y salida, cantidad de personas, tipo de habitación y motivo del viaje.","Con esos datos sabés qué buscar en el sistema y qué habitación conviene ofrecer.","Fase 1 · Escuchar y verificar"],
+ ["Chequear disponibilidad y tarifas en el PMS o el planning, para todo el período, antes de decir nada sobre precio.","Confirmar sin chequear la disponibilidad real es la causa más común de sobreventa no intencionada."],
+ ["Describir las habitaciones: vender, no enumerar. Vista, superficie, camas y servicios incluidos. Ofrecer primero la categoría superior.","Presentar la superior como opción por defecto aumenta la reserva de categoría alta. Sin conocer el producto solo se cotiza, no se vende.","Fase 2 · Vender y cotizar"],
+ ["Comunicar la tarifa: precio por noche, precio total con impuestos y qué incluye el plan. Explicar por qué la tarifa es esa.","Cotizada por noche y con su motivo, la tarifa se percibe como más justa. Los cargos inevitables se informan desde la primera cotización."],
+ ["Confirmar la elección: repetir en voz alta el tipo de habitación y la tarifa acordada antes de avanzar.","Si hubo un malentendido, aparece ahora y no en el mostrador."],
+ ["Reunir los datos: nombre completo, teléfono, mail, empresa o agencia, hora estimada de llegada y pedidos especiales.","La hora de llegada define la prioridad de limpieza de Housekeeping, y sin ese dato la habitación podría liberarse por la hora límite.","Fase 3 · Registrar y garantizar"],
+ ["Establecer los cargos: qué se cobra por alojamiento, qué extras quedan por cuenta del huésped y quién paga cada concepto.","Definirlo al tomar la reserva es lo que después permite armar bien la cuenta."],
+ ["Pedir garantía y avisar políticas: tarjeta, depósito o voucher, y decir en voz alta el plazo de cancelación gratuita y el cargo por no show.","El reclamo posterior a un no show se previene con la política informada y aceptada por el huésped."],
+ ["Reconfirmar todo con el cliente: releer fechas, habitación, tarifa, plan y política de cancelación.","Es la última oportunidad de corregir un error.","Fase 4 · Cerrar por escrito"],
+ ["Enviar el mail de confirmación, con número de reserva y todas las condiciones.","Sin confirmación escrita, la reserva no está cerrada. El mail protege a las dos partes."]
+];
+var DIAS=["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
+var OCC={101:"0001100",102:"1100011",103:"0111000",104:"1110011",105:"0000011",106:"1111100",107:"0011000",108:"0000110",
+ 201:"1111000",202:"0001111",203:"1100000",204:"0011110",205:"1110000",206:"0110000",207:"1100000",208:"0011100",
+ 301:"0000111",302:"1110000",303:"0111100",304:"1000011",305:"1100000",306:"0001000",307:"0000011",308:"1111000"};
+var PEND=[
+ {id:"r1",n:"Sra. Paz, Carolina",t:"Doble matrimonial",d:[2,3,4],x:"Pide piso alto (3.er piso).",ok:function(r){return r>=300;},no:"La habitación está libre y es del tipo pedido, pero la huésped pidió piso alto: buscá en el 3.er piso."},
+ {id:"r2",n:"Familia Ibáñez",t:"Doble matrimonial",d:[4,5],x:"Necesita dos dobles comunicadas (con puerta interna).",pair:[205,206],ok:function(r){return r===205||r===206;},no:"Tienen que ser dos habitaciones comunicadas: en el Monserrat, la 205 y la 206."},
+ {id:"r3",n:"Sr. Quiroga, Raúl",t:"Sencilla",d:[0,1],x:"Necesita habitación accesible.",ok:function(r){return r===101;},no:"Es del tipo pedido y está libre, pero no es accesible. En el Monserrat la habitación accesible es la 101."},
+ {id:"r4",n:"Srtas. Vera, Luna y Sosa",t:"Triple",d:[3,4,5],x:"Sin pedidos especiales."},
+ {id:"r5",n:"Sr. Molina, Esteban",t:"Superior",d:[3,4],x:"Sin pedidos especiales.",none:true}
+];
+function noches(d){ return DIAS[d[0]]+" a "+DIAS[d[d.length-1]]+" ("+d.length+" noche"+(d.length>1?"s":"")+", sale el "+DIAS[(d[d.length-1]+1)%7]+")"; }
+
+function planning(){
+  var root=h("div"), cur=null, fb=null;
+  function taken(room,day){
+    if(OCC[room].charAt(day)==="1") return 1;
+    for(var i=0;i<PEND.length;i++){ var p=PEND[i], a=S.plan[p.id]; if(!a||a==="alt") continue;
+      var rs=p.pair&&(a===p.pair[0]||a===p.pair[1])?p.pair:[a];
+      if(rs.indexOf(room)>=0&&p.d.indexOf(day)>=0) return 2; }
+    return 0;
+  }
+  function assign(room){
+    if(!cur){ fb=["bad","Primero elegí una reserva de la lista."]; return draw(); }
+    var p=cur, rooms=p.pair&&p.ok(room)?p.pair:[room];
+    if(tipoDe(room)!==p.t){ fb=["bad","La "+room+" es "+tipoDe(room)+" y la reserva pide "+p.t+"."]; return draw(); }
+    for(var i=0;i<rooms.length;i++) for(var j=0;j<p.d.length;j++) if(taken(rooms[i],p.d[j])){ fb=["bad","La "+rooms[i]+" está ocupada la noche del "+DIAS[p.d[j]]+": hay que chequear la disponibilidad para todo el período."]; return draw(); }
+    if(p.ok&&!p.ok(room)){ fb=["bad",p.no]; return draw(); }
+    S.plan[p.id]=room; save(); fb=["ok","Asignada: "+p.n+" → "+rooms.join(" y ")+", "+noches(p.d)+"."]; cur=null; draw();
+  }
+  function draw(){
+    root.textContent="";
+    var hechas=PEND.filter(function(p){return S.plan[p.id];}).length;
+    root.appendChild(h("div",{class:"q"},h("div",{class:"n"},"Planning de ocupación · semana modelo ",ej()),
+      P("Elegí una reserva y tocá el número de la habitación que le asignás. Resueltas "+hechas+" de "+PEND.length+".","lead"),
+      h("div",{class:"chips"},PEND.map(function(p){
+        var a=S.plan[p.id];
+        return h("button",{class:"chip"+(a?" done":""),type:"button","aria-pressed":String(cur===p),disabled:a?true:null,onclick:function(){ cur=p; fb=null; draw(); }},
+          p.n+" · "+p.t+(a?(a==="alt"?" · alternativa ofrecida":" · hab. "+(p.pair?p.pair.join(" y "):a)):""));
+      })),
+      cur?h("div",{class:"box"},h("h4",{text:cur.n}),P(cur.t+" · "+noches(cur.d)+". "+cur.x),
+        h("button",{class:"btn",type:"button",text:"No hay disponibilidad para esta reserva",onclick:function(){
+          if(!cur.none){ fb=["bad","Sí hay: revisá el planning fila por fila antes de decir que no."]; return draw(); }
+          fb=["alt"]; draw(); }})):null,
+      fb&&fb[0]==="alt"?altBox():null,
+      fb&&fb[0]!=="alt"?h("div",{class:"msg "+fb[0],text:fb[1]}):null,
+      hechas===PEND.length?h("div",{class:"msg ok",text:"Planning completo. Cada reserva quedó en una habitación del tipo pedido, libre todas las noches y con su pedido especial cumplido."}):null
+    ));
+    var tb=h("tbody"), lastF=0;
+    ROOMS.forEach(function(r){
+      var f=Math.floor(r/100);
+      if(f!==lastF){ lastF=f; tb.appendChild(h("tr",null,h("td",{class:"fl",colspan:"8",text:f+".º piso"}))); }
+      var t=tipoDe(r), ab={"Sencilla":"SGL","Doble twin":"TWN","Doble matrimonial":"DBL","Triple":"TPL","Superior":"SUP"}[t]+(r===101?" acc":"")+(r===205||r===206?" com":"");
+      tb.appendChild(h("tr",null,h("td",null,h("button",{class:"rm",type:"button","aria-label":"Habitación "+r+", "+t,onclick:function(){assign(r);}},String(r),h("small",{text:ab}))),
+        DIAS.map(function(_,d){ var k=taken(r,d); return h("td",{class:k===1?"o":k===2?"n":null,"aria-label":k?"ocupada":"libre"}); })));
+    });
+    root.appendChild(h("div",{class:"tbl"},h("table",{class:"plan"},h("colgroup",null,h("col",{class:"c0"})),
+      h("thead",null,h("tr",null,h("th",{text:"Hab."}),DIAS.map(function(d){return h("th",{text:d});}))),tb)));
+    root.appendChild(h("div",{class:"legend"},h("span",null,h("i",{style:"background:var(--occ)"}),"Ocupada"),h("span",null,h("i",{style:"background:var(--new)"}),"Asignada por vos"),h("span",null,h("i",{style:"background:var(--surface)"}),"Libre")));
+    root.appendChild(P("SGL sencilla · TWN doble twin · DBL doble matrimonial · TPL triple · SUP superior · acc accesible · com comunicadas. Cada columna es una noche.","lead"));
+    root.appendChild(h("button",{class:"btn",type:"button",text:"Empezar de nuevo",onclick:function(){ S.plan={}; save(); cur=null; fb=null; draw(); }}));
+  }
+  function altBox(){
+    var b=h("div",{class:"box"},h("h4",{text:"Correcto: las tres Superior están tomadas alguna de esas noches. ¿Qué le decís al huésped?"}));
+    [["«No hay disponibilidad.»",false,"Eso cierra la conversación. La pauta es ofrecer alternativas ante la falta de disponibilidad y agradecer siempre."],
+     ["«Para esa fecha no me queda superior, pero sí una doble; y si puede venir un día antes, tengo la superior que buscaba.»",true,"Así se ofrece: otra categoría para la misma fecha, o la misma categoría corriendo un día."]].forEach(function(o){
+      var bt=h("button",{class:"opt",type:"button",text:o[0],onclick:function(){ bt.classList.add(o[1]?"right":"wrong"); res.textContent=o[2]; if(o[1]){ S.plan.r5="alt"; save(); cur=null; fb=["ok","Alternativa ofrecida al Sr. Molina."]; setTimeout(draw,1400); } }});
+      b.appendChild(bt); });
+    var res=h("p",{class:"lead"}); b.appendChild(res); return b;
+  }
+  draw(); return root;
+}
+
+var ESCENAS=[
+ "Llama Diego Fernández. Viaja solo por trabajo y quiere una habitación del jueves 12 al sábado 14 de noviembre. Llega tarde, cerca de las 23 h. Paga él con su tarjeta Visa. Pide una habitación silenciosa. Deja su celular, 351 444-1180.",
+ "Escribe por mail Marta Ríos, de la agencia Viajes del Plata: reserva para el matrimonio López (2 adultos), del 20 al 23 de noviembre, con desayuno. La agencia paga el alojamiento con voucher; los extras, los pasajeros. Llegan a las 15 h. Mail de contacto: reservas@viajesdelplata.example.",
+ "Se acerca al mostrador Julia Benítez: quiere reservar para ella y dos amigas del 5 al 7 de diciembre, solo alojamiento. Llegan a las 17 h. Todavía no sabe con qué tarjeta va a garantizar. Teléfono: 11 5555-0199."
+];
+function reservaForm(){
+  var root=h("div"), esc=Math.floor(Math.random()*ESCENAS.length);
+  function draw(){
+    root.textContent="";
+    var F={
+      nom:h("input",{type:"text",autocomplete:"off"}), per:h("input",{type:"number",min:"1",max:"4",inputmode:"numeric"}),
+      qui:h("input",{type:"text",autocomplete:"off",placeholder:"El propio huésped, una empresa, una agencia…"}), con:h("input",{type:"text",autocomplete:"off"}),
+      ing:h("input",{type:"date"}), sal:h("input",{type:"date"}), hor:h("input",{type:"time"}),
+      tip:sel(Object.keys(TIPOS).map(function(t){return t+" · "+money(TIPOS[t].tar)+" por noche";})), pla:sel(["EP · solo alojamiento","CP · con desayuno","MAP · media pensión","AP · pensión completa"]),
+      gar:sel(["Tarjeta de crédito","Depósito o transferencia","Voucher de agencia","Sin garantía (reserva no garantizada)"]),
+      can:sel(["Teléfono","Correo electrónico","WhatsApp Business","En persona, en el mostrador","Motor de reservas (web del hotel)","OTA","Agencia"]),
+      pag:sel(["PP · paga el pasajero","EP · el cliente paga el alojamiento; el pasajero, los extras","FC · el cliente paga todo"]),
+      ped:h("input",{type:"text",autocomplete:"off",placeholder:"Opcional"}), pol:h("input",{type:"checkbox"})
+    };
+    var L={
+      nom:field("Apellido y nombre del huésped",F.nom), per:field("Cantidad de personas",F.per), qui:field("Quién realiza la reserva",F.qui), con:field("Teléfono o mail de contacto",F.con),
+      ing:field("Ingreso",F.ing), sal:field("Salida",F.sal), hor:field("Horario de ingreso previsto",F.hor), tip:field("Tipo de habitación y tarifa diaria",F.tip), pla:field("Plan de alimentación",F.pla),
+      gar:field("Garantía",F.gar), can:field("Canal de entrada",F.can), pag:field("Quién paga qué",F.pag), ped:field("Pedidos especiales",F.ped)
+    };
+    var WHY={
+      nom:"Apellido y nombre: es con lo que Recepción busca la reserva en el check in.",
+      per:"Cantidad de personas: junto con el plan, determina cuántos desayunos o servicios prevé AA&BB.",
+      qui:"Quién realiza la reserva: hay que saber a qué contrato corresponde antes de confirmar precio.",
+      con:"Contacto: sin teléfono o mail no podés enviar la confirmación escrita ni el recordatorio previo a la llegada.",
+      ing:"Fecha de ingreso: sin ella no se puede chequear la disponibilidad.",
+      sal:"Fecha de salida: la disponibilidad se chequea para todo el período solicitado.",
+      hor:"Horario de ingreso: sin este dato, la habitación podría liberarse por la hora límite.",
+      tip:"Tipo de habitación y tarifa: es lo que se le confirma en voz alta al huésped antes de avanzar.",
+      pla:"Plan de alimentación: confundirlo al cotizar genera diferencias de facturación al check out.",
+      gar:"Garantía: hay que dejar asentado si la reserva es garantizada o no garantizada.",
+      can:"Canal de entrada: es uno de los campos de la ficha de reserva.",
+      pag:"Quién paga qué: definirlo al tomar la reserva es lo que después permite armar bien la cuenta."
+    };
+    var out=h("div");
+    function guardar(){
+      var miss=[], k; out.textContent="";
+      for(k in WHY){ var bad=!String(F[k].value).trim(); L[k].classList.toggle("err",bad); if(bad) miss.push(WHY[k]); }
+      if(!F.pol.checked) miss.push("Políticas: falta decirle al huésped el plazo de cancelación gratuita y el cargo por no show.");
+      var t=F.tip.value.split(" · ")[0], n=0;
+      if(F.ing.value&&F.sal.value){ n=Math.round((new Date(F.sal.value)-new Date(F.ing.value))/86400000); if(n<1){ miss.push("La fecha de salida tiene que ser posterior a la de ingreso."); L.sal.classList.add("err"); } }
+      if(t&&F.per.value&&+F.per.value>TIPOS[t].cap){ miss.push("La habitación "+t+" es para "+TIPOS[t].cap+" persona"+(TIPOS[t].cap>1?"s":"")+": no alcanza para "+F.per.value+"."); L.tip.classList.add("err"); }
+      if(miss.length){ out.appendChild(h("div",{class:"msg bad"},"La reserva no se guardó. Si falta uno solo de estos datos, no se puede operar:",h("ul",null,miss.map(function(m){return h("li",{text:m});})))); return; }
+      var num=4823+S.res.length; while(S.res.some(function(r){return r.num===num;})) num++;
+      S.res.unshift({num:num,nom:F.nom.value.trim(),per:F.per.value,qui:F.qui.value.trim(),con:F.con.value.trim(),ing:F.ing.value,sal:F.sal.value,n:n,hor:F.hor.value,tip:t,tar:TIPOS[t].tar,pla:F.pla.value.split(" · ")[0],gar:F.gar.value,can:F.can.value,pag:F.pag.value.split(" · ")[0],ped:F.ped.value.trim(),mail:false,fecha:iso(new Date())});
+      save(); esc=(esc+1)%ESCENAS.length; draw();
+    }
+    root.appendChild(h("div",{class:"q"},h("div",{class:"n"},"Tomar una reserva ",ej()),
+      h("div",{class:"say"},h("b",{text:"El pedido"}),ESCENAS[esc]),
+      P("Volcá el pedido en la ficha. Lo que el huésped no dijo, tenés que preguntárselo: completalo vos como si te hubiera respondido.","lead"),
+      h("div",{class:"form"},L.nom,h("div",{class:"two"},L.per,L.qui),L.con,h("div",{class:"two"},L.ing,L.sal),h("div",{class:"two"},L.hor,L.can),L.tip,L.pla,L.gar,L.pag,L.ped,
+        h("label",{class:"ck"},F.pol,"Le dije en voz alta el plazo de cancelación gratuita y el cargo por no show."),
+        h("div",{class:"row"},h("button",{class:"btn pri",type:"button",text:"Guardar la reserva",onclick:guardar}),h("button",{class:"btn",type:"button",text:"Otro pedido",onclick:function(){ esc=(esc+1)%ESCENAS.length; draw(); }})),out)));
+    if(S.res.length){
+      root.appendChild(h("h4",{text:"Reservas tomadas ("+S.res.length+")"}));
+      S.res.forEach(function(r,ix){
+        var total=r.n*r.tar;
+        root.appendChild(sheet("Ficha de reserva N.° 00"+r.num,null,null,
+          fields([["Apellido y nombre",r.nom],["Personas",r.per],["Quién reservó",r.qui],["Contacto",r.con],["Ingreso / salida",dmy(r.ing)+" — "+dmy(r.sal)],["Noches",String(r.n)],["Ingreso previsto",r.hor+" h"],["Habitación",r.tip],["Tarifa diaria",money(r.tar)+" · plan "+r.pla],["Garantía",r.gar],["Quién paga",r.pag],["Canal",r.can],["Pedidos especiales",r.ped||"—"],["Tomada el",dmy(r.fecha)]]),
+          say("«La tarifa es de "+money(r.tar)+" por noche, así que por "+(r.n===1?"la noche":"las "+r.n+" noches")+" serían "+money(total)+".»","Cómo se enuncia la tarifa"),
+          /^Sin/.test(r.gar)?note("Reserva no garantizada: el hotel retiene la habitación hasta la hora límite (habitualmente las 18 h). Si el huésped no llega ni garantiza, se libera a la venta."):null,
+          r.mail?h("div",{class:"msg ok",text:"Mail de confirmación enviado: la reserva está cerrada."}):h("div",{class:"msg bad",text:"Falta el mail de confirmación: sin confirmación escrita, la reserva no está cerrada."}),
+          h("div",{class:"row"},r.mail?null:h("button",{class:"btn pri",type:"button",text:"Enviar mail de confirmación",onclick:function(){ r.mail=true; save(); draw(); }}),
+            h("button",{class:"btn",type:"button",text:"Borrar",onclick:function(){ S.res.splice(ix,1); save(); draw(); }}))));
+      });
+    }
+  }
+  draw(); return root;
+}
+
+var CASO_OVB=[
+ {s:"Sábado en el Monserrat. Para esta noche hay 25 reservas garantizadas y 24 habitaciones: una reserva de una OTA entró dos veces por una falla de sincronización entre canales. ¿Qué tipo de sobreventa es?",o:["No intencionada","Intencionada","No es sobreventa"],a:0,e:"La intencionada es una decisión comercial para compensar cancelaciones y no shows previsibles. Esta viene de un error de carga o de sincronización: es no intencionada."},
+ {s:"Son las 11 de la mañana y todavía no llegó nadie. ¿Cuándo actuás?",o:["Ahora: antes de que llegue el huésped se elige qué reserva derivar y se le reserva en otro hotel","Esperás: a lo mejor alguien no se presenta","Cuando llegue el último huésped, se lo explicás en el mostrador"],a:0,e:"El protocolo empieza antes de que llegue el huésped: seleccionar qué reserva derivar (walking) y reservar en otro hotel."},
+ {s:"Tenés que elegir a quién derivar. ¿Cuál de estas reservas NO se toca?",o:["La de un cliente frecuente y la de un huésped VIP","La de un huésped que viene por primera vez","Da lo mismo: se deriva al último que llegue"],a:0,e:"Nunca se deriva a clientes frecuentes ni a VIP."},
+ {s:"¿En qué hotel le reservás al huésped que vas a derivar?",o:["En uno de igual o superior categoría","En el más barato que tenga lugar","En cualquiera que esté cerca"],a:0,e:"El hotel alternativo tiene que ser de igual o superior categoría."},
+ {s:"Llega el huésped derivado. ¿Qué hace el hotel por él?",o:["Le guarda el equipaje, lo acompaña, lo llama al día siguiente y abona la factura del otro hotel","Le da la dirección del otro hotel y le devuelve la seña","Le pide que espere en el lobby por si se libera algo"],a:0,e:"Esos son los cuatro gestos del protocolo cuando llega el huésped."},
+ {s:"El Monserrat es un hotel chico e independiente. Según el hallazgo de la industria (Dudziak, 2026), ¿qué le conviene resolver antes de calcular sobreventa a propósito?",o:["Política de cancelación, garantías de pago y recordatorios accionables","Nada: la sobreventa matemática funciona igual en cualquier hotel","Vender solo por OTAs"],a:0,e:"La sobreventa matemática funciona mejor en hoteles grandes con historial de datos y acuerdos de relocación. Un hotel pequeño arriesga su reputación si «camina» a un huésped en un fin de semana agotado."}
+];
+
+function vReservas(){
+  var m=S.mode.reservas||"estudiar", v=h("div");
+  v.appendChild(h("h2",{text:"Reservas"}));
+  v.appendChild(P("La puerta de entrada comercial del hotel: cómo se toma una reserva, qué se vende, a qué tarifa y qué se hace cuando sobran o faltan habitaciones.","lead"));
+  v.appendChild(ref("Clase 3 y Clase 4 · Unidad 2"));
+  v.appendChild(seg("reservas")); v.appendChild(glosario("reservas","Reservas"));
+  if(m==="practicar"){
+    v.appendChild(H3("Tomar una reserva")); v.appendChild(reservaForm());
+    v.appendChild(H3("Planning de ocupación")); v.appendChild(planning());
+    v.appendChild(H3("Caso: sobreventa en el Monserrat")); v.appendChild(caseGame("ovb","Overbooking",CASO_OVB));
+    v.appendChild(H3("Preguntas de repaso")); v.appendChild(quiz("reservas"));
+    return v;
+  }
+  v.appendChild(H3("Para qué está Reservas"));
+  v.appendChild(box("Tres objetivos centrales",["Máxima ocupación a la mejor tarifa posible.","Tratamiento y registro de todas las reservas recibidas.","Coordinación interdepartamental: emitir la información que otros sectores necesitan."],true));
+  v.appendChild(P("Una reserva es un acuerdo, verbal o escrito, entre el hotel y una persona física o jurídica: el hotel se compromete a prestar alojamiento y demás servicios en una fecha determinada, y la otra parte, a recibirlos y pagarlos."));
+  v.appendChild(table(["Sector","Qué necesita saber","Qué recibe"],[["Recepción","Quién llega","Voucher o reserva confirmada"],["Housekeeping","Cuántas habitaciones preparar","Reporte de disponibilidad"],["AA&BB","Cuántos desayunos servir","Forecast de desayunos"]]));
+  v.appendChild(P("Por eso una reserva bien cargada evita errores en cadena en toda la operación."));
+
+  v.appendChild(H3("Tomar una reserva: 10 pasos"));
+  v.appendChild(steps("res10",R_STEPS));
+  v.appendChild(say("«Entonces le reservo una doble superior a $ 95.000 la noche, ¿es correcto?»","Paso 5"));
+  v.appendChild(say("«¿A qué hora estima llegar? Así dejamos la habitación lista.»","Paso 6"));
+  v.appendChild(say("«Puede cancelar sin cargo hasta 48 h antes; después se cobra una noche.»","Paso 8"));
+  v.appendChild(modelos(
+    modelo("Ficha de reserva completa",function(){ return sheet("Ficha de reserva · directa N.° 004822","Así se ve una ficha completa. Si falta uno solo de estos campos, la reserva no se puede operar.",false,
+      fields([["Apellido y nombre","Fernández, Diego"],["Cantidad de personas","1 adulto"],["Quién realizó la reserva","El propio huésped"],["Teléfono / mail","+54 9 351 444-1180 · d.fernandez@mail.com"],["Ingreso / salida","22/09 — 24/09"],["Cantidad de noches","2 noches"],["Horario de ingreso previsto","23:00 h (llegada tardía)"],["Tipo de habitación","Sencilla estándar"],["Tarifa diaria","$ 78.000 — plan EP"],["Datos de facturación","A nombre del huésped · DNI 32.114.508"],["Fecha en que se tomó","15/08, motor de reservas"],["Garantía","Tarjeta de crédito Visa •••• 4417"],["Pedidos especiales","Habitación silenciosa; factura A"],["Canal de entrada","Reserva directa (web del hotel)"]]),
+      h("p",{class:"sh-foot",text:"Paga el huésped, no la agencia: todos los consumos van a su cuenta. La garantía es su tarjeta: el cargo por no show se aplica directo. Llegada 23:00 h: sin este dato, la habitación podría liberarse por la hora límite."})); })
+  ));
+
+  v.appendChild(H3("Tipos de reserva"));
+  v.appendChild(grid(box("No garantizadas","El hotel retiene la habitación hasta una hora límite (habitualmente las 18 h). Si el huésped no llega ni garantiza, la habitación se libera a la venta."),
+    box("Garantizadas",["El huésped asegura la reserva con tarjeta, depósito o voucher; ante un no show puede aplicarse cargo.","Confirmada: hay habitación y la garantía ya fue aceptada. Se emite la confirmación por escrito.","A confirmar: solicitud tomada pero pendiente de disponibilidad o de un dato (lista de espera, garantía no acreditada). Es firme recién cuando el hotel responde por escrito."])));
+
+  v.appendChild(H3("Por dónde llega la reserva"));
+  v.appendChild(grid(box("Canales de distribución (intermediarios)","Agencias de viajes mayoristas y minoristas, OTAs y organizadoras de convenciones y eventos."),
+    box("Conductos de reserva (la vía)","Solicitud directa del huésped, teléfono o email, agencias, empresas comerciales y centrales de reservas propias o independientes.")));
+  v.appendChild(table(["Tarifa","Cómo funciona"],[["Comisionable","El huésped paga la tarifa publicada al hotel, y el hotel paga una comisión al intermediario."],["Neta","El hotel da una tarifa reducida al intermediario, que la remarca y la vende al huésped."]],true));
+  v.appendChild(table(["Forma de recepción","Cuándo se usa"],[["Personal","El huésped reserva en el mostrador. Frecuente en hotelería de paso y de ruta."],["Telefónica","Exige guion, cortesía telefónica y toma de datos precisa. Canal del huésped corporativo y del mismo día."],["Correo electrónico","Deja constancia escrita. Canal habitual de grupos, convenios y agencias."],["Vía Internet","Motor de reservas propio, OTA o GDS. Entra directo al PMS por el channel manager. Hoy concentra el mayor volumen."],["WhatsApp Business","Se suma a los canales directos."]],true));
+  v.appendChild(grid(box("Central afiliada","Propia de una cadena: solo vende los hoteles de esa marca, con su sistema y su programa de fidelización."),box("Central no afiliada","Suscripción compartida entre hoteles independientes: cada uno paga una cuota y accede a una red de venta común.")));
+  v.appendChild(h("h4",{text:"El voucher de agencia"}));
+  v.appendChild(P("Es el comprobante que emite la agencia y prueba que el huésped ya pagó los servicios allí detallados. El hotel no le cobra al huésped lo que el voucher cubre: se lo factura después a la agencia."));
+  v.appendChild(grid(box("El circuito",["El huésped compra y paga en la agencia.","La agencia emite el voucher y reserva en el hotel.","Reservas lo recibe, lo valida y lo adjunta a la reserva.","El huésped lo presenta al check in y Recepción lo coteja."],true),
+    box("Qué verifica Recepción",["Nombre del pasajero y cantidad de huéspedes","Fechas de entrada y salida","Tipo de habitación y plan de alimentación incluido","Servicios cubiertos y servicios excluidos"])));
+  v.appendChild(P("Todo lo que el voucher no cubre (frigobar, lavandería, llamadas, extras de gastronomía) se le cobra al huésped al check out. Aclararlo al llegar evita el conflicto más común con pasajeros de agencia."));
+  v.appendChild(modelos(modelo("Voucher de agencia",function(){ return sheet("Voucher de agencia N.° 4471","Los campos son los de la clase; los datos son inventados.",true,
+    fields([["Agencia emisora","Viajes del Plata SRL"],["Nombre del huésped","López, Andrés"],["Cantidad de huéspedes","2 adultos"],["Tipo y categoría de habitación","Doble matrimonial"],["Período de la estancia","20/11 — 23/11 (3 noches)"],["Servicios incluidos","Alojamiento con desayuno (CP)"],["Servicios excluidos","Frigobar, lavandería, llamadas, extras de gastronomía"],["Fecha de expedición","02/11"],["Observaciones especiales","Cama matrimonial; llegada 15 h"]]),
+    h("p",{class:"sh-foot",text:"El voucher se archiva como respaldo de la facturación entre el hotel y la agencia."})); })));
+
+  v.appendChild(H3("Tipos de habitación: seis criterios"));
+  v.appendChild(P("Conocerlos a fondo es parte de la labor de ventas: hay que mostrar el producto y sus cualidades."));
+  v.appendChild(table(["Criterio","Tipos"],[
+    ["1. Capacidad","Sencilla (single): un huésped. Doble: una matrimonial, dos individuales (twin) o dos matrimoniales (doble-doble). Triple. Cuádruple."],
+    ["2. Categoría","Estándar · Deluxe · Superior o ejecutiva (destino natural del upgrade y del upselling) · De lujo o suites."],
+    ["3. Ubicación interior","Adyacentes: próximas, en el mismo piso. Contiguas (adjoining): pared compartida, sin comunicación. Comunicadas (connecting): con puerta interna, ideal para familias."],
+    ["4. Ubicación exterior","OV vista al mar · PV vista a la piscina (la más ruidosa) · MV vista a la montaña o bosque · IV interior o sin vista (la tarifa más accesible)."],
+    ["5. Medidas de las camas","Individual o twin 1,00 × 1,90 · Full 1,25 × 1,90 · Matrimonial 1,35 × 1,90 · Queen 1,60 × 1,90 · King 2,00 × 2,00 (en metros)."],
+    ["6. Especiales","ACC accesible · BUS para ejecutivos · PET pet friendly · LTS larga estadía · FAM familiares o conectadas · BLE bleisure."]],true));
+
+  v.appendChild(H3("Tarifas y planes de alimentación"));
+  v.appendChild(P("La tarifa es el precio que cobra el hotel por el alojamiento, pudiendo incluir o no servicios adicionales."));
+  v.appendChild(table(["Tarifa","Qué es"],[["Rack o mostrador","Máxima publicada, sin descuentos."],["Corporativa comercial","Descuento estándar para empresas frecuentes."],["Corporativa negociada","Acordada contractualmente según volumen."],["Promocional","Temporada baja, eventos o marketing."],["Grupal","Múltiples habitaciones: contingentes, congresos."],["Day use","Uso por horas, sin pernocte."],["Alta y baja temporada","Puede variar hasta un 50 %."],["Habitués","Descuento de 10 a 20 % para clientes preferenciales."],["Familiar","Promueve alojar familias con niños."],["De agentes","Para agentes de viajes o personal de aerolíneas (AD/FAM)."],["Gubernamental","Reducida y fija para viajes oficiales, por convenio."],["Paquete","Tarifa neta acordada con un tour operador por volumen."]],true));
+  v.appendChild(table(["Plan","Incluye"],[["EP · Plan Europeo","Solo el alojamiento, sin ninguna comida."],["CP · Plan Continental","Alojamiento más desayuno."],["MAP · Media pensión","Desayuno más una comida (almuerzo o cena)."],["AP · Plan Americano","Pensión completa: desayuno, almuerzo y cena."],["All inclusive","Todas las comidas, bebidas y actividades recreativas dentro de la tarifa."]],true));
+  v.appendChild(h("h4",{text:"Cómo se enuncia la tarifa"}));
+  v.appendChild(grid(box("Cotizar cada noche por separado","«La tarifa es de $ 95.000 por noche, así que por las tres noches serían $ 285.000.»"),box("Presentar la diferencia como descuento","En vez de «el fin de semana tiene un recargo de $ 15.000», decir: «la tarifa del fin de semana es $ 110.000 y de domingo a jueves tiene $ 15.000 de descuento»."),
+    box("Explicar por qué cambia","«Esa semana hay una feria en la ciudad y la demanda sube, por eso la tarifa es más alta que la del fin de semana siguiente.»"),box("Informar el precio total desde el inicio","«Son $ 95.000 por noche, precio final: ya incluye impuestos y desayuno. No hay cargos adicionales al check out.»")));
+
+  v.appendChild(H3("Planillas de Reservas"));
+  v.appendChild(table(["Planilla","Qué es","En el PMS"],[["Formulario u hoja de reservas","Donde se vuelcan todos los datos de la reserva individual.","Reservation / Res. Card"],["Planning de ocupación","Cuadro de doble entrada: habitaciones × días.","Tape Chart / Room Plan"],["Forecast","Proyecta ocupación, llegadas, salidas y huéspedes en casa.","Rooms Forecast Report"],["Reporte de disponibilidad","Habitaciones a la venta por tipo y fecha; base para gestionar la sobreventa controlada.","Availability / Control Panel"],["Control de reservas","Verificación diaria de soportes, vencimientos de provisorias y depósitos pendientes.","Arrivals / Deposit / Cancellation"]],true));
+  v.appendChild(modelos(modelo("Habitaciones y tarifas del Hotel Monserrat",function(){ return sheet("Habitaciones y tarifas","Distribución y tarifas inventadas para practicar. Se repite igual en los tres pisos.",true,
+    table(["Habitaciones","Tipo","Tarifa por noche"],[["x01 y x02","Sencilla",money(78000)],["x03 y x04","Doble twin",money(95000)],["x05 y x06","Doble matrimonial",money(95000)],["x07","Triple",money(115000)],["x08","Superior",money(125000)]],true),
+    h("p",{class:"sh-foot",text:"La 101 es la habitación accesible. La 205 y la 206 son comunicadas. El planning de la semana modelo está en Practicar."})); })));
+
+  v.appendChild(H3("Reservas grupales"));
+  v.appendChild(P("Provienen de agencias de viajes y turismo, organizadores de incentivos y fam tours."));
+  v.appendChild(box("Cómo se toma",["Verificar disponibilidad y tarifas.","Reserva provisoria con vencimiento (bloqueo).","El intermediario envía la solicitud formal por mail.","El hotel responde por escrito con la información."],true));
+  v.appendChild(grid(box("La rooming list",["Nombre y apellido de cada pasajero","Distribución por habitación","Tipo de cama de cada una","Horario estimado de arribo"]),box("Fecha de release","Plazo límite para enviar la rooming list y confirmar el cupo: pasada esa fecha, las habitaciones no confirmadas vuelven a la venta."),
+    box("Cuenta maestra y cortesías","El alojamiento se factura a la agencia en una sola cuenta y los extras van a cuentas individuales. Es habitual pactar una habitación gratis cada 15 o 20 pagas, para el guía del grupo.")));
+  v.appendChild(P("La rooming list la envía el intermediario antes de la llegada: es lo que permite pre-asignar y armar las llaves."));
+  v.appendChild(modelos(modelo("Rooming list",function(){ return sheet("Rooming list · grupo Viajes del Plata","Las columnas son las que pide la clase; los pasajeros son inventados.",true,
+    table(["Hab.","Pasajeros","Cama","Arribo"],[["203","Acosta, M. · Blanco, T.","Twin","14:30"],["204","Castro, L. · Duarte, P.","Twin","14:30"],["305","Espósito, R. · Funes, A.","Matrimonial","14:30"],["301","Gómez, S. (guía)","Individual","14:30"]],true),
+    h("p",{class:"sh-foot",text:"Fecha de release: 10 días antes del arribo. Alojamiento a cuenta maestra; extras, a cada habitación."})); })));
+
+  v.appendChild(H3("Modificaciones, cancelaciones y no show"));
+  v.appendChild(grid(box("Modificaciones","De fechas, tipo de habitación, nombre o cantidad. Pedir número de reserva, verificar disponibilidad y registrar quién modifica."),box("Cancelaciones","Registrar titular, número de reserva, fecha y tipo. Ofrecer fechas opcionales antes de cerrar, y agradecer siempre."),box("Reembolsos","Devolución del dinero o acreditación para futuros alojamientos; siempre se comunica a administración.")));
+  v.appendChild(P("No toda ausencia es igual: cuanto antes se conoce la baja, más chances de revender la habitación."));
+  v.appendChild(table(["Evento","Qué pasó","Mejor herramienta de prevención"],[["Cancelación temprana","El huésped cancela mientras la habitación todavía es fácil de revender.","Revenue management y remarketing normales."],["Cancelación tardía","Cancela cerca de la llegada, pero avisa.","Política clara, depósitos, lista de espera y un proceso ágil de reventa."],["No-show silencioso","Nunca llega y nunca cancela.","Garantía de pago y un recordatorio con opciones de confirmar, modificar o cancelar."],["Reclamo por la política","Cuestiona el cargo después de un no show o una cancelación tardía.","Política informada con claridad, aceptación del huésped, evidencia y manejo consistente."]],true));
+  v.appendChild(box("Tres recordatorios, en el momento oportuno",["Confirmación de la reserva.","Recordatorio previo a la llegada (entre 3 y 7 días antes del check in).","Recordatorio del día, con opción de confirmar, modificar o cancelar."],true));
+
+  v.appendChild(H3("Sobreventa (overbooking)"));
+  v.appendChild(P("Se reservan más habitaciones de las disponibles."));
+  v.appendChild(grid(box("Intencionada","Decisión comercial para compensar cancelaciones y no shows previsibles."),box("No intencionada","Errores de carga o fallas de sincronización entre canales.")));
+  v.appendChild(steps("ovb",[["Antes de que llegue el huésped: seleccionar qué reservas derivar (walking).","Elegirlo con tiempo permite cuidar a los clientes frecuentes y VIP, que no se derivan."],["Reservar en un hotel de igual o superior categoría.","El huésped no puede quedar peor de lo que había contratado."],["Cuando llega el huésped: guardarle el equipaje y acompañarlo.","La falla es del hotel: el huésped no tiene por qué resolverla solo."],["Llamarlo al día siguiente y abonar la factura del otro hotel.","El seguimiento es lo que recupera al huésped."]]));
+  v.appendChild(note("Hallazgo de la industria (Dudziak, 2026): la sobreventa matemática funciona mejor en hoteles grandes con historial de datos y acuerdos de relocación. Un hotel pequeño o independiente arriesga su reputación si «camina» a un huésped en un fin de semana agotado."));
+
+  v.appendChild(H3("La comunicación durante la reserva"));
+  v.appendChild(P("La reserva es el primer contacto real del huésped con el hotel: allí se construye la expectativa contra la que después se medirá toda la estadía."));
+  v.appendChild(grid(box("Claridad y precisión","Qué incluye la tarifa, políticas de cancelación y no show, horarios de check in y check out."),box("Confirmación por escrito","Toda reserva se confirma por mail: protección de ambas partes."),box("Tono comercial y cordial","Ofrecer alternativas ante la falta de disponibilidad y agradecer siempre."),box("Comunicación pre-arribo","Mejora la experiencia y genera ingresos adicionales (upselling).")));
+  v.appendChild(say("«Para esa fecha no me queda doble, pero sí una superior; y si puede correrse un día, tengo la doble que buscaba.»","En lugar de «no hay disponibilidad»"));
+
+  v.appendChild(H3("Los No de Reservas"));
+  v.appendChild(losNo(["Nunca te limites a «dar las tarifas» sin mostrar los servicios.","Nunca prometas una vista que no está confirmada por escrito.","Jamás ofrezcas un servicio que el hotel no tiene o que está fuera de servicio.","Nunca confirmes una reserva sin chequear la disponibilidad real.","Nunca cotices una tarifa memorizada: consultá siempre la vigente.","Nunca apliques la tarifa de un contrato vencido.","Jamás inventes escasez ni ocultes cargos: son prácticas comerciales desleales.","Nunca derives a otro hotel a un cliente frecuente o VIP.","Nunca digas en voz alta el número de habitación de un huésped."]));
+  return v;
+}
+
+/* ================= pestaña 2: CHECK IN (Clase 6-7) ================= */
+var CI_ANTES=[
+ ["Revisar el listado de arribos: cuántas llegadas hay, a qué hora, quiénes son VIP o repetidores y qué pedidos especiales traen.","Lo que no se preparó a la mañana se paga con demoras en el mostrador a la tarde."],
+ ["Pre-asignar habitaciones: piso alto, cama matrimonial, habitaciones contiguas, lejos del ascensor.","Acá se decide el upgrade y se juega la experiencia: «luna de miel» o «socio frecuente» se resuelven en este paso."],
+ ["Preparar fichas y llaves: tarjetas de registro impresas, llaves codificadas y control del pre check in online ya completado.","Con todo listo, los diez pasos del mostrador entran en cuatro minutos."],
+ ["Coordinar con Housekeeping: marcar qué habitaciones limpiar primero.","Las pre-asignadas a llegadas tempranas o a un early check in tienen que estar listas antes."]
+];
+var CI_STEPS=[
+ ["Recibir: dar la bienvenida, preguntar si tiene reserva y pedir nombre y apellido.","Es la primera impresión del hotel: saludo, contacto visual y sonrisa al llegar.","Recibir · 0:00 a 1:00"],
+ ["Buscar: localizar la reserva en el sistema.","Ahí está todo lo acordado al reservar: tarifa, garantía y pedidos especiales."],
+ ["Chequear: cantidad de noches, tipo de habitación y tarifa.","Una diferencia se corrige ahora, con el huésped delante, y no al cobrar."],
+ ["Registrar: entregar la ficha de registro y solicitar la documentación.","Nadie se aloja sin registrarse: la ficha refuerza el contrato de hospedaje y el documento es su respaldo legal.","Asegurar · 1:00 a 2:30"],
+ ["Reconfirmar los cargos de alojamiento y los extras, en voz alta.","La distribución de cargos se define al abrir la cuenta, no al cobrar. Aclararlo al llegar evita el conflicto más común."],
+ ["Garantizar: tomar la garantía de estadía, con preautorización o depósito.","El hotel entrega el servicio antes de cobrarlo: la garantía es lo único que cubre esas noches ya entregadas."],
+ ["Entregar las llaves y una descripción breve de las facilidades.","Presentar los servicios es parte del check in, y es el turno con más oportunidad comercial.","Despedir · 2:30 a 4:00"],
+ ["Llamar a Conserjería, para la ayuda con el equipaje.","El bellboy acompaña al huésped y le muestra luces, aire, caja de seguridad y minibar."],
+ ["Pasar los mensajes recibidos antes del arribo del huésped.","Un mensaje entregado tarde puede haber perdido vigencia."],
+ ["Desear una excelente estadía.","Es el cierre del recorrido."]
+];
+var CI_CUPON=[
+ ["Tomar la tarjeta.","Siempre delante del huésped."],
+ ["Comprobar el titular.","El nombre de la tarjeta tiene que ser el de la ficha y el documento."],
+ ["Revisar la vigencia.","Que no venza durante la estadía."],
+ ["Pedir autorización.","Por el monto estimado de la estadía."],
+ ["Elaborar y firmar.","El huésped acepta el monto retenido."],
+ ["Devolver la tarjeta.","Con su copia del comprobante."]
+];
+var CASO_CI=[
+ {s:"Una huésped argentina con reserva te dice que le robaron la billetera. No tiene el DNI, pero trae la constancia de la denuncia hecha en la comisaría.",o:["Se aloja con la constancia; archivás una copia con la ficha","No puede alojarse sin el documento físico","La alojás sin registrar nada, para no incomodarla"],a:0,e:"Quien extravió el documento se aloja con la constancia: ciudadano del país, denuncia en la policía más próxima; extranjero, en su consulado o embajada."},
+ {s:"Otro huésped no tiene documento ni constancia de ningún tipo. Insiste en que ya pagó la reserva.",o:["No puede brindarse alojamiento: avisás al supervisor y lo dejás registrado","Lo alojás igual porque la reserva está paga","Le pedís que te dicte el número de documento de memoria"],a:0,e:"No es rigidez: protege a los demás huéspedes, a la empresa y a la comunidad."},
+ {s:"Reserva PP. El huésped te da una tarjeta de crédito para la garantía, pero el nombre impreso es el de otra persona.",o:["No la tomás como garantía: el titular tiene que coincidir con la ficha y el documento; le pedís otro medio","La tomás igual: lo importante es que tenga fondos","Le pedís que firme como si fuera el titular"],a:0,e:"El segundo paso de la preautorización es comprobar el titular: nombre de la tarjeta = ficha y documento."},
+ {s:"La tarjeta está a su nombre, pero vence en dos días y la estadía es de cinco noches.",o:["Pedís otra tarjeta u otro medio: no puede vencer durante la estadía","La aceptás: hoy está vigente","Cobrás toda la estadía ahora sin avisar"],a:0,e:"El tercer paso es revisar la vigencia: que no venza durante la estadía."},
+ {s:"A las 22 h entra una pareja sin reserva y pide una habitación para esta noche.",o:["Cotizás tarifa rack u otra autorizada, verificás disponibilidad y exigís garantía","Les decís que sin reserva no se puede","Les das la habitación y arreglan mañana"],a:0,e:"Es un walk in: se cotiza tarifa rack u otra autorizada, se verifica disponibilidad y se exige garantía de pago."},
+ {s:"Son las 15 h. Llega un huésped y la habitación que tenía pre-asignada todavía no figura como limpia e inspeccionada.",o:["No la asignás todavía; le ofrecés dejar el equipaje en Conserjería mientras tanto","Le das la llave: seguro ya está lista","Lo mandás a otro hotel"],a:0,e:"El turno tarde controla que las habitaciones pasen a limpia/inspeccionada antes de asignarlas. El que llega y su habitación no está lista deja el equipaje a resguardo de la Conserjería."}
+];
+function garantiaGame(){
+  var root=h("div",{class:"q"}), ok=0, n=0, cur;
+  function nuevo(){
+    var tipos=Object.keys(TIPOS), t=tipos[Math.floor(Math.random()*tipos.length)], no=2+Math.floor(Math.random()*4), mod=["PP","EP","FC"][n%3];
+    var aloj=no*TIPOS[t].tar;
+    cur={t:t,no:no,mod:mod,aloj:aloj,resp:mod==="PP"?aloj*1.5:mod==="EP"?aloj*0.5:0}; draw(null);
+  }
+  function draw(res){
+    root.textContent="";
+    root.appendChild(h("div",{class:"n"},"Calcular la garantía · ejercicio "+(n+1)+" ",ej()));
+    var quien={PP:"Reserva PP (Paga Pax): el huésped paga alojamiento y extras.",EP:"Reserva EP (Extras Pax): la empresa paga el alojamiento; el huésped, sus extras.",FC:"Reserva FC (Full Credit): la empresa paga todo, a crédito y contra factura."}[cur.mod];
+    root.appendChild(h("p",{class:"pq",text:"Habitación "+cur.t+", "+cur.no+" noches a "+money(TIPOS[cur.t].tar)+" por noche. "+quien}));
+    root.appendChild(P("¿Qué monto le preautorizás al huésped en su tarjeta? Usá el criterio de Di Muro: alojamiento más 50 % previsto de extras. Si no corresponde pedirle garantía, escribí 0.","lead"));
+    var inp=h("input",{type:"number",inputmode:"numeric",min:"0","aria-label":"Monto a preautorizar"});
+    if(res){ inp.value=res.v; inp.disabled=true; }
+    root.appendChild(h("div",{class:"form"},field("Monto a preautorizar, en pesos",inp)));
+    if(!res){
+      root.appendChild(h("div",{class:"row",style:"margin-top:10px"},h("button",{class:"btn pri",type:"button",text:"Corregir",onclick:function(){
+        if(inp.value==="") return; var v=+inp.value, good=Math.abs(v-cur.resp)<1; if(good) ok++; draw({v:inp.value,good:good}); }})));
+    } else {
+      var ex=cur.mod==="PP"?cur.no+" × "+money(TIPOS[cur.t].tar)+" = "+money(cur.aloj)+" de alojamiento, más 50 % previsto de extras ("+money(cur.aloj*0.5)+"): "+money(cur.resp)+". Al check out se cobra lo consumido y se libera el resto."
+        :cur.mod==="EP"?"El alojamiento ("+money(cur.aloj)+") lo garantiza la empresa. Al huésped se le pide garantía solo por los extras: 50 % previsto, "+money(cur.resp)+"."
+        :"En FC no se le pide garantía al huésped: $ 0. Pero sí se verifica el documento y la carta de crédito de la empresa.";
+      root.appendChild(h("div",{class:"msg "+(res.good?"ok":"bad"),text:(res.good?"Correcto. ":"No. ")+ex}));
+      root.appendChild(P("Aciertos: "+ok+" de "+(n+1)+".","lead"));
+      root.appendChild(h("button",{class:"btn pri",type:"button",text:"Otro ejercicio",onclick:function(){ n++; nuevo(); }}));
+    }
+  }
+  nuevo(); return root;
+}
+
+function vCheckin(){
+  var m=S.mode.checkin||"estudiar", v=h("div");
+  v.appendChild(h("h2",{text:"Check in"}));
+  v.appendChild(P("La Recepción es el centro de operaciones del hotel y el primer y último contacto del huésped. Acá: los turnos, el ingreso del huésped, la ficha de registro y la garantía de estadía.","lead"));
+  v.appendChild(ref("Clase 6-7 · Unidad 3 · 3.1 a 3.4"));
+  v.appendChild(seg("checkin")); v.appendChild(glosario("checkin","Check in"));
+  if(m==="practicar"){
+    v.appendChild(H3("Ordenar los pasos"));
+    v.appendChild(orderGame("check in con reserva, los 10 pasos",["Recibir al huésped y pedir nombre y apellido","Buscar la reserva en el sistema","Chequear noches, tipo de habitación y tarifa","Registrar: ficha de registro y documentación","Reconfirmar los cargos en voz alta","Garantizar la estadía: preautorización o depósito","Entregar las llaves y describir las facilidades","Llamar a Conserjería por el equipaje","Pasar los mensajes recibidos antes del arribo","Desear una excelente estadía"]));
+    v.appendChild(H3("Calcular la garantía")); v.appendChild(garantiaGame());
+    v.appendChild(H3("Caso: una tarde en el mostrador")); v.appendChild(caseGame("ci","En el mostrador",CASO_CI));
+    v.appendChild(H3("Preguntas de repaso")); v.appendChild(quiz("checkin"));
+    return v;
+  }
+  v.appendChild(H3("La Recepción y su gente"));
+  v.appendChild(grid(box("Funciones de la Recepción",["Registrar el ingreso y egreso del huésped","Disponer cambios de habitación","Realizar funciones de caja","Mantener relaciones con huéspedes y clientes","Autorizar extensiones y salidas anticipadas","Generar información interdepartamental"]),
+    box("Las diez cualidades del recepcionista",["Presencia: uniforme, higiene, postura","Léxico cuidado: trato de usted, sin muletillas ni jerga interna","Trabajo en equipo","Apego a procedimientos","Cordialidad: saludo, contacto visual y sonrisa","Proactividad","Flexibilidad","Comunicación sin ambigüedad","Multitarea: teléfono, mostrador y PMS a la vez","Empatía"],true)));
+
+  v.appendChild(H3("Turnos y pase de turno"));
+  v.appendChild(P("La recepción no cierra nunca: funciona 24 horas repartida en tres turnos, cada uno con un foco distinto."));
+  v.appendChild(table(["Turno","Es el turno de…","Foco"],[["Mañana · 7 a 15 h","Las salidas: check out, cobro y facturación. Pico de 8 a 11.","Velocidad sin errores en el cobro."],["Tarde · 15 a 23 h","Las llegadas: check in, upselling y disponibilidad.","Primera impresión y criterio comercial."],["Noche · 23 a 7 h","El control: auditoría nocturna y reportes de gestión.","Exactitud y autonomía."]],true));
+  v.appendChild(grid(
+    box("Turno mañana",["Recibir el pase de turno: pendientes, quejas abiertas, VIP del día y resultado de la auditoría","Ejecutar los check out","Controlar estados de cuenta antes de cerrar","Informar a Housekeeping cada salida real","Preparar las llegadas del día","Atender caja y consultas"]),
+    box("Turno tarde",["Ejecutar los check in","Recibir habitaciones de Housekeeping: que pasen a limpia/inspeccionada antes de asignarlas","Resolver faltas de disponibilidad","Upselling y venta de servicios","Controlar los no arribados y dejarlos identificados para la auditoría","Preparar el día siguiente"]),
+    box("Turno noche · el auditor",["Auditoría nocturna: cuadra caja, controla cargos y corre el cierre","Postear el room & tax","Cobrar no shows y cancelaciones tardías","Emitir los reportes de gestión: ocupación, ADR, RevPAR y llegadas","Atender la operación nocturna","Dejar el pase de turno"])));
+  v.appendChild(note("El pase de turno nunca es solo informal ni verbal: se registra en el libro de novedades o en el sistema (traspasos, quejas abiertas, VIP, pendientes de cobro). Lo que no está escrito, no existe."));
+  v.appendChild(say("«La 812 quedó overstay hasta el jueves, la 705 es sleep out —chequealo con Housekeeping— y de la rooming list del grupo faltan dos no show.»","Cómo suena en el turno"));
+
+  v.appendChild(H3("Tipos de check in"));
+  v.appendChild(table(["Tipo","Cómo es"],[["Tradicional","En el mostrador, con ficha y documento, atendido por un recepcionista."],["Personalizado","En la habitación o en un lounge privado, para huéspedes VIP o suites."],["Automático","Kiosco o app: el huésped se registra solo y recibe la llave móvil."],["Early check in","Ingreso antes del horario oficial; sujeto a disponibilidad y a veces con cargo."],["Walk in (sin reserva)","Se cotiza tarifa rack, se verifica disponibilidad y se exige garantía."],["De grupos","Con rooming list, llaves pre-armadas y cuenta maestra abierta."]],true));
+
+  v.appendChild(H3("Antes de la llegada"));
+  v.appendChild(P("El check in empieza mucho antes de que el huésped cruce la puerta."));
+  v.appendChild(h("div",{class:"timeline"},[["8 h","listado de arribos"],["10 h","pre-asignación"],["14 h","habitaciones listas"],["15 h","arribo del huésped"]].map(function(x){ return h("span",null,h("b",{text:x[0]+" "}),x[1]); })));
+  v.appendChild(steps("ciantes",CI_ANTES));
+
+  v.appendChild(H3("Check in con reserva: 10 pasos"));
+  v.appendChild(P("Regla mnemotécnica: Recibo, Aseguro, Despido. Son 3 + 3 + 4 pasos, con una meta de mostrador de 4 minutos: una cola en el lobby es la primera mala impresión."));
+  v.appendChild(steps("ci10",CI_STEPS));
+
+  v.appendChild(H3("Después del check in"));
+  v.appendChild(grid(box("Lo que queda registrado",["Dar el check in en el sistema: la habitación pasa a in house y se habilitan los cargos a la cuenta.","Completar el perfil del huésped: datos, preferencias y frecuencia; es la base de la personalización futura.","Archivar la documentación: ficha firmada y copia del documento."]),
+    box("No show",["El auditor nocturno emite el listado y aplica el cargo si la reserva estaba garantizada.","Se libera la habitación para la venta del día siguiente.","Queda registrado en el perfil: un no show repetido cambia la exigencia de garantía."]),
+    box("Check in de grupos",["La clave es que nadie haga fila.","Rooming list previa: habitaciones y llaves armadas antes del arribo.","Registro simplificado: se trabaja con el coordinador o guía.","Cuenta maestra a la agencia y extras individuales por habitación."])));
+
+  v.appendChild(H3("La ficha de registro"));
+  v.appendChild(P("Nadie se aloja sin registrarse. La completa el propio huésped: refuerza el contrato de hospedaje, evita preguntas incómodas en público y protege su discreción. Ningún dato es burocracia: cada campo tiene un uso operativo, comercial o legal."));
+  v.appendChild(table(["Dato","Para qué sirve"],[["Nombre completo","Facilita el archivo de la documentación y la comunicación futura."],["Nacionalidad y procedencia","Permiten analizar el origen de la clientela y armar planes comerciales."],["Fecha de nacimiento","Habilita atenciones: una tarjeta o un detalle si cumple años alojado."],["Estado civil y profesión","Perfilan al huésped, permiten segmentar."],["Dirección, CP y teléfono","Localizar al huésped o a su familia y comunicarse después de la estadía."],["Tipo y N.° de documento","Verifica la identidad y es el respaldo legal del hospedaje."],["Fecha de check out","Indispensable con ocupación alta."],["Forma de pago","Define la garantía de la estadía y la repartición de cargos (PP · EP · FC)."],["Matrícula del auto","Control de cocheras y localización del vehículo del huésped."]],true));
+  v.appendChild(modelos(modelo("Ficha de registro",function(){ return sheet("Ficha de registro de huéspedes","Los campos son los de la clase; los datos son inventados.",true,
+    fields([["Nombre completo","Paz, Carolina"],["Nacionalidad","Argentina"],["Procedencia","Rosario, Santa Fe"],["Fecha de nacimiento","14/03/1988"],["Estado civil","Casada"],["Profesión","Arquitecta"],["Dirección y CP","Mitre 1240 · 2000"],["Teléfono","341 555-0142"],["Tipo y N.° de documento","DNI 33.555.012"],["Habitación","305"],["Fecha de check out","Sábado"],["Forma de pago","Tarjeta de crédito · PP"],["Matrícula del auto","AE 345 KT"],["Firma del huésped","C. Paz"]]),
+    h("p",{class:"sh-foot",text:"El número de documento se transcribe recién después de confirmar que los datos de la ficha coinciden con el documento presentado."})); })));
+
+  v.appendChild(H3("Control de documentos"));
+  v.appendChild(P("Se hace delante del huésped: se confirma que los datos de la ficha coincidan con el documento presentado, y recién entonces se transcribe el número."));
+  v.appendChild(box("Qué se mira, en este orden",["La foto y la persona: que sea el documento de quien está enfrente.","El nombre exacto: igual al de la ficha y al de la reserva, sin abreviar.","La vigencia: que no esté vencido ni por vencer durante la estadía.","Tipo y número: se transcribe a la ficha y al perfil del huésped."],true));
+  v.appendChild(grid(box("Si extravió el documento","Se aloja con la constancia: ciudadano del país, denuncia en la policía más próxima; extranjero, en su consulado o embajada. Se archiva copia con la ficha."),box("Sin documento ni constancia","No puede brindarse alojamiento. No es rigidez: protege a los demás huéspedes, a la empresa y a la comunidad. Se avisa al supervisor y se deja registrado.")));
+  v.appendChild(say("«¿Me facilita un documento para completar el registro? Es el único trámite y ya está listo.»","Cómo se pide sin que suene policial"));
+
+  v.appendChild(H3("Formas de pago y garantía de la estadía"));
+  v.appendChild(P("Formas de pago: efectivo, tarjeta de crédito, cheques bancarios o de viajero, voucher de canje (MCO) y cuenta canje. La garantía con tarjeta es el sistema más utilizado."));
+  v.appendChild(box("Por qué la garantía no es opcional",["El hotel suele entregar el servicio antes de cobrarlo: el huésped duerme, consume y paga al salir.","Skipper: se retira sin pagar.","Overstay: se queda noches extra.","Consumos: minibar, bar, lavandería.","Tarjeta rechazada al check out."]));
+  v.appendChild(h("h4",{text:"Pasos del cupón (hoy, la preautorización)"}));
+  v.appendChild(steps("cupon",CI_CUPON));
+  v.appendChild(say("«Para dejar la habitación garantizada tomo una retención de US$ 450 en su tarjeta; no es un cobro, se libera al hacer el check out.»","Cómo se pide"));
+  v.appendChild(modelos(modelo("Cuánto se garantiza",function(){ return sheet("Cálculo de la garantía","Ejemplo de Di Muro, tal como está en la clase.",false,
+    table(["Concepto","Monto"],[["3 noches × US$ 100","US$ 300"],["+ 50 % previsto de extras","US$ 150"],["Cupón / preautorización","US$ 450"]],true),
+    h("p",{class:"sh-foot",text:"Al check out se ajusta la diferencia: se cobra lo consumido y se libera el resto."})); })));
+  v.appendChild(box("La terminal POS","POS significa Point of Sale. No es la tarjeta ni el banco: es el dispositivo que conecta al hotel con el sistema de pagos y permite cobrar o preautorizar un monto estimado. El banco emisor autoriza o rechaza; en el check out se cobra o se libera la garantía."));
+
+  v.appendChild(H3("Quién garantiza qué: PP, EP y FC"));
+  v.appendChild(P("Antes de abrir la cuenta hay que saber quién paga cada cosa. El cliente es el que contrata y paga la habitación, aunque no duerma en ella; el huésped es quien se aloja."));
+  v.appendChild(table(["Reserva","Garantía del alojamiento","Garantía de los extras"],[["PP · Paga Pax","Huésped","Huésped"],["EP · Extras Pax","Cliente","Huésped"],["FC · Full Credit","Cliente","Cliente"]],true));
+  v.appendChild(P("En el check in: si es EP se pide garantía al huésped solo por los extras; si es FC no se le pide garantía, pero sí se verifica el documento y la carta de crédito de la empresa."));
+  v.appendChild(box("¿Quién puede ser el cliente?",["Empresa: envía a su personal en viaje de trabajo.","Agencia u operador: arma el paquete y paga por voucher.","Aerolínea: aloja tripulación o pasajeros demorados.","Organismo o embajada: delegaciones y eventos."]));
+
+  v.appendChild(H3("Los No del check in"));
+  v.appendChild(losNo(["Nunca alojes a nadie sin registrarse.","Jamás brindes alojamiento a quien no tiene documento ni constancia.","Nunca transcribas el número de documento antes de confirmar que coincide con la ficha.","Nunca tomes la tarjeta fuera de la vista del huésped.","Nunca aceptes como garantía una tarjeta que vence durante la estadía.","Nunca asignes una habitación que Housekeeping todavía no pasó a limpia/inspeccionada.","Nunca dejes la distribución de cargos para el momento de cobrar: se define al abrir la cuenta.","Nunca dejes el pase de turno solo en lo verbal: lo que no está escrito, no existe."]));
+  return v;
+}
+
+/* ================= pestaña 3: CHECK OUT (Clase 8 · Check out y otros) ================= */
+var CO_ANTES=[
+ ["Controlar las salidas previstas: cuántas hay y a qué hora; detectar quién pidió late check out o traslado al aeropuerto.","Un check out rápido es un check out preparado."],
+ ["Pedir consumos y extras: minibar, lavandería, restaurante, spa y llamadas.","Todo lo consumido debe estar posteado antes de imprimir la cuenta."],
+ ["Verificar pago, señas y vouchers: qué se pagó por adelantado, qué cubre el voucher de la agencia y si la preautorización alcanza el saldo.","Así no hay sorpresas con el saldo cuando el huésped ya está en el mostrador."],
+ ["Separar los cargos: definir qué paga el huésped y qué se factura a un tercero.","Para no cobrarle dos veces lo mismo."],
+ ["Imprimir el estado de cuenta.","Para revisarlo con el huésped en el mostrador."]
+];
+var CO_STEPS=[
+ ["Saludar y confirmar datos: nombre, apellido y número de habitación.","Con esos tres datos abrís la cuenta correcta y no la de otro huésped."],
+ ["Buscar y confirmar: ubicar la información en el sistema con el huésped.","Lo que se va a cobrar se revisa con él delante."],
+ ["Preguntar y encuestar: si la estadía fue de su agrado; entregar la encuesta.","El huésped que se queja todavía espera una solución; el que no se queja, no vuelve."],
+ ["Avisar a Housekeeping, para que revise la habitación que se libera.","Housekeeping entra a limpiar y la habitación vuelve a estar disponible."],
+ ["Chequear consumos de minibar y restaurante; cargarlos si hace falta.","El minibar es la fuente clásica de discusión al pagar."],
+ ["Entregar el estado de cuenta, explicando cualquier cargo que no comprenda.","La meta es una cuenta sin sorpresas."],
+ ["Confirmar el medio de pago: contra la preautorización tomada al check in, o el medio que elija en el momento.","Se cobra lo consumido y se libera el resto de la garantía."],
+ ["Emitir la factura: corroborar el tipo (A o B) y a nombre de quién: huésped, empresa o agencia.","Refacturar después es un trámite."],
+ ["Recolectar las llaves y dar de baja la tarjeta magnética.","Para que no siga abriendo la habitación."],
+ ["Ofrecer la próxima reserva.","Es la última oportunidad de vender la próxima estadía, y el repetidor reserva directo, sin comisión."],
+ ["Equipaje y traslado: ofrecer ayuda con el equipaje, guarda de valijas y remis o traslado al aeropuerto.","El huésped con vuelo a la noche puede dejar su equipaje a resguardo de la Conserjería."],
+ ["Agradecer e invitar a volver.","La despedida es la última impresión: define lo que el huésped va a contar del hotel."]
+];
+var QUEJA=[
+ ["Escuchar sin interrumpir.","Dejar que termine: el huésped necesita sentirse escuchado antes que resuelto."],
+ ["Agradecer y disculparse.","Disculparse por la situación, sin buscar culpables ni justificar al hotel."],
+ ["Registrar y verificar.","Anotar qué pasó y confirmarlo: lo que no se registra, se repite."],
+ ["Resolver o derivar.","Dar un plazo concreto y quedarse a cargo del seguimiento, incluso al derivar."],
+ ["Compensar si corresponde.","Proporcional al problema: cambio de habitación, un consumo, un upgrade."],
+ ["Hacer seguimiento.","Volver a preguntar si quedó resuelto: ahí se recupera al huésped."]
+];
+var CASO_QJ=[
+ {s:"22 h. El huésped de la 304 baja al mostrador, molesto: el aire acondicionado no enfría y dice que ya avisó a la tarde. Empieza a contarte lo que pasó. ¿Qué hacés primero?",o:["Lo dejás terminar, sin interrumpir","Le aclarás enseguida que a la tarde vos no estabas","Llamás a mantenimiento mientras sigue hablando"],a:0,e:"Paso 1: escuchar sin interrumpir. El huésped necesita sentirse escuchado antes que resuelto."},
+ {s:"Terminó de hablar. ¿Qué le decís?",o:["«Entiendo, lamento que le haya pasado. Me ocupo yo.»","«Eso es de mantenimiento.»","«Es la política del hotel: los reclamos técnicos se toman de día.»"],a:0,e:"Paso 2: agradecer y disculparse por la situación, sin buscar culpables ni justificar al hotel. Las otras dos frases están en la lista de lo que nunca se dice."},
+ {s:"Antes de moverte del mostrador, ¿qué hacés?",o:["Anotás qué pasó y lo confirmás con él","Confiás en tu memoria: es un solo reclamo","Le pedís que lo escriba él en la encuesta de salida"],a:0,e:"Paso 3: registrar y verificar. Lo que no se registra, se repite: por eso este huésped tuvo que avisar dos veces."},
+ {s:"Mantenimiento te dice que puede subir, pero no sabe si lo arregla esta noche. ¿Qué le decís al huésped?",o:["«En 15 minutos le confirmo»: le das un plazo concreto y seguís vos el tema","«Ya avisé, cualquier cosa llame usted a mantenimiento»","«Seguro que en un ratito se soluciona»"],a:0,e:"Paso 4: resolver o derivar, con un plazo concreto y quedándote a cargo del seguimiento, incluso al derivar."},
+ {s:"No tiene arreglo hasta mañana. Hay habitaciones libres. ¿Qué compensación corresponde?",o:["Proporcional al problema: cambio de habitación, y si cabe un consumo o un upgrade","Ninguna: no es culpa de Recepción","Regalarle toda la estadía"],a:0,e:"Paso 5: compensar si corresponde, en proporción al problema: ni escasa, ni desmedida."},
+ {s:"El huésped ya está en la nueva habitación. ¿Terminó el tema?",o:["No: más tarde volvés a preguntarle si quedó resuelto","Sí: se cambió de habitación, asunto cerrado","Sí, salvo que vuelva a quejarse"],a:0,e:"Paso 6: hacer seguimiento. Ahí se recupera al huésped: uno con el problema resuelto rápido y bien suele ser más leal que uno que nunca tuvo inconvenientes."}
+];
+var PAGA=[
+ {n:"Viajero de empresa · EP",i:"Habitación 208. Huésped de Constructora Sur S.A.; la reserva es EP: la empresa cubre el alojamiento y el pasajero, sus consumos.",c:["Folio empresa","Folio huésped"],
+  it:[["Alojamiento, 3 noches",0],["Impuestos",0],["Desayuno",0],["Minibar",1],["Bar",1],["Lavandería",1]],f:"2 folios, 2 facturas: la A se envía a la empresa a cuenta corriente; la B se cobra al huésped en el mostrador."},
+ {n:"Grupo de agencia · FC",i:"Contingente de 20 habitaciones de Viajes del Plata SRL; la reserva es FC: la agencia paga el alojamiento contra voucher.",c:["Cuenta maestra","Folio de extras de la habitación"],
+  it:[["Alojamiento de las 20 habitaciones",0],["Minibar de la habitación 305",1],["Bar",1],["Teléfono",1]],f:"21 folios: una factura A a la agencia, contra voucher, más una por cada folio de extras que se cobra en el mostrador."},
+ {n:"Dos amigos que dividen",i:"Habitación 204. Dos amigos, A y B, en la misma habitación; cada uno paga lo suyo. Se definió en el check in.",c:["Folio 1 · pax A","Folio 2 · pax B","Mitad a cada folio"],
+  it:[["Alojamiento",2],["Cena de A en el restaurante",0],["Lavandería de B",1],["Consumos de bar de A",0]],f:"2 folios, 2 facturas. Cada folio lleva el 50 % del alojamiento más los extras de cada uno. Se define en el check in, nunca al cobrar."},
+ {n:"Turista · PP",i:"Habitación 210. Turista que paga su estadía; la reserva es PP.",c:["Folio del huésped","Folio de un tercero"],
+  it:[["Alojamiento, 3 noches",0],["Impuestos",0],["Minibar",0],["Lavandería",0]],f:"1 folio, 1 factura B a nombre del huésped, cobrada en el mostrador."}
+];
+function pagaGame(){
+  var root=h("div"), cur=0;
+  function draw(){
+    root.textContent="";
+    root.appendChild(h("div",{class:"chips"},PAGA.map(function(p,i){ return h("button",{class:"chip",type:"button","aria-pressed":String(i===cur),text:p.n,onclick:function(){cur=i;draw();}}); })));
+    var p=PAGA[cur], g=classGame("¿Quién paga esto?",p.c,p.it,p.i);
+    root.appendChild(g); root.appendChild(h("div",{class:"box"},h("h4",{text:"Cómo queda la cuenta"}),P(p.f)));
+  }
+  draw(); return root;
+}
+
+function vCheckout(){
+  var m=S.mode.checkout||"estudiar", v=h("div");
+  v.appendChild(h("h2",{text:"Check out"}));
+  v.appendChild(P("La salida del huésped: preparar la cuenta, cobrar, facturar y despedir. Y lo que rodea a la caja: folios, auditoría nocturna, quejas y fidelización.","lead"));
+  v.appendChild(ref("Clase 8 · Unidad 3 · 3.4 a 3.9"));
+  v.appendChild(seg("checkout")); v.appendChild(glosario("checkout","Check out"));
+  if(m==="practicar"){
+    v.appendChild(H3("¿Quién paga esto?")); v.appendChild(pagaGame());
+    v.appendChild(H3("Caso: una queja en el mostrador")); v.appendChild(caseGame("qj","Queja",CASO_QJ));
+    v.appendChild(H3("Ordenar los pasos"));
+    v.appendChild(orderGame("check out, los 12 pasos",["Saludar y confirmar datos","Buscar y confirmar en el sistema","Preguntar por la estadía y entregar la encuesta","Avisar a Housekeeping","Chequear consumos","Entregar el estado de cuenta","Confirmar el medio de pago","Emitir la factura","Recolectar las llaves","Ofrecer la próxima reserva","Equipaje y traslado","Agradecer e invitar a volver"]));
+    v.appendChild(H3("Preguntas de repaso")); v.appendChild(quiz("checkout"));
+    return v;
+  }
+  v.appendChild(H3("Tipos de check out"));
+  v.appendChild(table(["Tipo","Cómo es"],[["Tradicional","En el mostrador: se revisa la cuenta con el huésped, se cobra y se factura."],["Automático","Por app o kiosco: el huésped cierra su cuenta sin pasar por Recepción."],["Express","La cuenta se cierra contra la tarjeta ya autorizada y la factura se envía por email."],["Late check out","Salida más tarde del horario oficial; según disponibilidad y con posible cargo."],["De grupos","Cuenta maestra a la agencia y extras individuales cobrados por habitación."]],true));
+
+  v.appendChild(H3("Antes: preparar la salida"));
+  v.appendChild(P("Si la cuenta ya está armada y controlada, la salida se resuelve en dos minutos y sin discusiones."));
+  v.appendChild(steps("coantes",CO_ANTES));
+
+  v.appendChild(H3("Durante: 12 pasos"));
+  v.appendChild(steps("co12",CO_STEPS));
+  v.appendChild(say("«¿Vuelve por trabajo el mes que viene? Le puedo dejar la reserva hecha ahora.»","Paso 10"));
+
+  v.appendChild(H3("Después: lo que queda por cerrar"));
+  v.appendChild(P("El huésped se fue, pero la cuenta todavía no está cerrada del todo: hay cargos que se transfieren a un tercero y saldos que quedan a cobrar."));
+  v.appendChild(table(["Qué","Qué se hace"],[["A agencias y empresas","Lo que cubre el voucher o la cuenta corriente del cliente corporativo."],["Cargos a no shows","La penalidad de la reserva garantizada que no se presentó."],["Cargos no pagados","Pasan a cuentas a cobrar y se reclaman, con la documentación como respaldo."],["Invitaciones y descuentos","Se imputan a la cuenta de cortesías, siempre con autorización."],["Room status","Actualizarlo o avisar a Housekeeping: la habitación pasa a sucia y entra a limpieza."],["Follow up del feedback","Responder la encuesta o la reseña y registrar lo que pasó en el perfil."]],true));
+
+  v.appendChild(H3("Late check out"));
+  v.appendChild(grid(box("Previsto: lo pidió antes",["Informar a Housekeeping la nueva hora de salida.","Contemplarlo en la asignación del día.","Confirmar el cargo extra y cargarlo al folio."],true),
+    box("Imprevisto: pasó la hora",["Llamar al cliente y pedir la hora estimada de salida.","Informar el costo adicional antes de aplicarlo.","Avisar a pisos y reacomodar la asignación."],true)));
+
+  v.appendChild(H3("Cuenta, folio y factura"));
+  v.appendChild(table(["","Qué es"],[["Cuenta","De quién es. Conjunto de movimientos y saldo asociados a un huésped, una reserva o un responsable."],["Folio","Dónde se anota. Detalle organizado de cargos, pagos, créditos y ajustes."],["Factura","Con qué se cierra. Comprobante fiscal emitido según los requisitos aplicables."]],true));
+  v.appendChild(box("Tres formas de abrir la cuenta",["Individual: un folio por habitación, todo al huésped (PP).","Dividida: dos folios en la misma habitación, uno al cliente corporativo y otro al huésped (EP).","Maestra: un folio que agrupa muchas habitaciones y se factura a la agencia (FC); cada habitación conserva su folio de extras."]));
+  v.appendChild(P("La pregunta que ordena todo es «¿quién paga esto?». La respuesta define el folio; el folio define la factura. Una habitación puede tener varios folios; un folio puede recibir varios pagos."));
+  v.appendChild(modelos(
+    modelo("Cuatro casos: cómo quedan los folios",function(){ return sheet("Cuenta y folios en cuatro casos","La cuenta es siempre una por reserva; cambia cuántos folios se abren y a quién se factura cada uno.",false,
+      table(["Caso","Folios","Facturas y garantía"],[["Pax individual · PP","Folio 1: alojamiento, impuestos y todos los extras. Paga el huésped.","1 folio, 1 factura. Garantía con su tarjeta por estadía + 50 % de extras."],["Dos pax que dividen","Folio 1: 50 % del alojamiento + extras de A. Folio 2: 50 % + extras de B.","2 folios, 2 facturas. Se define en el check in, nunca al cobrar."],["Viajero de empresa · EP","Folio empresa: alojamiento, impuestos y desayuno. Folio huésped: minibar, bar, lavandería.","2 folios, 2 facturas. Al huésped se le pide garantía solo por los extras."],["Grupo de 20 · FC","Cuenta maestra: alojamiento de las 20 habitaciones, paga la agencia contra voucher. 20 folios de extras, uno por habitación.","21 folios. 1 factura a la agencia + las de los extras que se cobran en el mostrador."]],true)); }),
+    modelo("Tipos de factura: tres ejemplos",function(){ return sheet("Facturas del mostrador","Quién paga define a nombre de quién sale; su condición fiscal define la letra. Un folio = una factura.",false,
+      table(["Caso","Factura","Detalle"],[["Pax individual · PP","B · Sr. Juan Pérez, hab. 210","Alojamiento 3 noches US$ 300 + minibar y lavandería US$ 42. Total US$ 342."],["Viajero de empresa · EP","A · Constructora Sur S.A.","Alojamiento 3 noches. Total US$ 300. Se envía a cuenta corriente."],["","B · Sr. Juan Pérez, extras","Minibar y lavandería. Total US$ 42. Se cobra al huésped."],["Grupo · FC","A · Viajes del Plata SRL, voucher 4471","Alojamiento del grupo, 20 hab. × 2 noches. Total US$ 4.000."],["","B · extras por habitación","Una por cada habitación del grupo, según consumo."]],true),
+      h("p",{class:"sh-foot",text:"A a responsables inscriptos, B a consumidores finales. Pedí los datos fiscales en el check in: refacturar después es un trámite."})); })
+  ));
+
+  v.appendChild(H3("Auditoría nocturna"));
+  v.appendChild(P("El auditor nocturno es el recepcionista del turno noche con funciones contables: mientras el hotel duerme, revisa que todo lo consumido esté cobrado y todo lo cobrado esté justificado. Es el último filtro antes de que el día quede cerrado."));
+  v.appendChild(box("Qué hace",["Cierra el día: cuadra caja, controla cargos y corre el cierre del sistema.","Postea el room & tax: alojamiento e impuestos de cada habitación ocupada esa noche.","Cobra no shows y cancelaciones tardías, según política, y deja constancia por escrito.","Emite los reportes de gestión: ocupación, ADR, RevPAR y llegadas del día siguiente.","Controla que cada ficha de registro o pre check in esté completa y firmada.","Deja el pase de turno para la mañana."]));
+  v.appendChild(note("Actualización 2026: la Main Courante manual y los vales en papel explican la lógica que hoy el PMS automatiza cada noche en el night audit run. El cargo por no show se ejecuta sobre la tarjeta tokenizada, según la política de cancelación aceptada al reservar."));
+
+  v.appendChild(H3("Gestión de quejas"));
+  v.appendChild(P("La queja es información gratuita y una segunda oportunidad: el huésped que se queja todavía espera una solución; el que no se queja, no vuelve."));
+  v.appendChild(steps("queja",QUEJA));
+  v.appendChild(say("«Entiendo, lamento que le haya pasado. Me ocupo yo y en 15 minutos le confirmo.»","Sí"));
+  v.appendChild(box("La paradoja de la recuperación del servicio",["Un huésped con un problema resuelto rápida y brillantemente suele ser más leal que uno que nunca tuvo inconvenientes.","Velocidad: la demora erosiona el efecto.","Apropiación: quien recibe la queja se hace cargo.","Compensación proporcional: ni escasa, ni desmedida.","Seguimiento: confirmar que la solución funcionó."]));
+
+  v.appendChild(H3("Encuestas, recorrido del huésped y fidelización"));
+  v.appendChild(table(["Punto del recorrido","Qué está en juego"],[["Elección","Web, fotos y reseñas: la expectativa se forma acá."],["Reserva y pre-arribo","Confirmación clara y contacto previo."],["Check in","Primera impresión: espera y trato."],["Estadía","Limpieza, ruido, wifi, desayuno, resolución de fallas."],["Check out y post","Cuenta sin sorpresas y seguimiento posterior."]],true));
+  v.appendChild(grid(box("Encuestas de satisfacción",["Internas: durante la estadía o al check out, para corregir a tiempo.","Externas: reseñas en OTAs y Google, que además venden.","Se mide: puntaje general, puntaje por área y NPS.","Medir no alcanza: si nadie actúa sobre el dato, la encuesta molesta al huésped."]),
+    box("Fidelización",["Retener a un huésped cuesta mucho menos que conseguir uno nuevo.","Perfil del huésped en el PMS: historial y preferencias.","Programas de fidelización: puntos y niveles.","Atenciones al repetidor: reconocerlo por su nombre, una nota escrita, una cortesía.","Comunicación posterior: agradecer, pedir feedback y ofrecer la próxima estadía."])));
+
+  v.appendChild(H3("Tecnología del Front Office"));
+  v.appendChild(grid(box("PMS","Sistema central: integra reservas, recepción, caja y facturación, housekeeping y reportes."),box("Channel manager","Sincroniza disponibilidad y tarifas entre el PMS y todos los canales de venta en tiempo real."),box("Reservas online","Motor de reservas propio (venta directa) y OTAs; se busca equilibrar visibilidad y costo de venta."),box("Transformación digital","Pre check in, self check in, llaves móviles, chat y tarifas dinámicas. Libera tiempo administrativo para la atención.")));
+
+  v.appendChild(H3("Los No del check out"));
+  v.appendChild(losNo(["Nunca digas «Eso es de mantenimiento».","Nunca digas «Yo no estaba en ese turno».","Nunca digas «Es la política del hotel».","Nunca interrumpas a un huésped que se está quejando.","Nunca busques culpables ni justifiques al hotel ante una queja.","Nunca imprimas la cuenta sin tener posteados todos los consumos.","Nunca le cobres al huésped lo que cubre el voucher o paga un tercero.","Nunca apliques el cargo de un late check out sin informarlo antes.","Jamás imputes una invitación o un descuento sin autorización.","Nunca dejes activa la tarjeta magnética después de la salida."]));
+  return v;
+}
+
+/* ================= pestaña 4: CONSERJERÍA (Clase 8 · Conserjería y tel) ================= */
+var EQ_STEPS=[
+ ["Guardar el equipaje en un espacio cerrado y seguro: un cuarto con llave, de acceso restringido al personal del sector.","El hotel asume la custodia de un bien ajeno: por eso el procedimiento es estricto."],
+ ["Identificar cada bulto con su número o troquel y entregar la copia al huésped.","Sin ese comprobante no se devuelve el equipaje."],
+ ["Registrar en la planilla: cantidad de bultos, nombre, habitación y hora de ingreso.","Toda pieza guardada se anota: todo movimiento de bienes ajenos se respalda con planilla, troqueles o firmas."],
+ ["Al devolverlo: pedir el comprobante, verificar la identidad y anotar la hora de retiro.","Nunca se entrega equipaje sin verificar la identidad."]
+];
+var CORR_STEPS=[
+ ["Verificar el destinatario contra la lista de huéspedes: in house, con reserva futura o ya retirado.","De eso depende qué se hace con el envío: entregarlo, guardarlo junto a la reserva o intentar el reenvío."],
+ ["Registrar en la planilla fecha, hora, remitente y quién recibe.","El conserje maneja bienes ajenos: todo movimiento se registra."],
+ ["Custodiar en un lugar seguro.","Mientras no se entrega, el envío está bajo responsabilidad del hotel."],
+ ["Entregar contra firma.","La firma es el respaldo de que el huésped lo recibió."]
+];
+var TAREAS=[
+ ["Recomendar restaurantes, espectáculos, traslados y compras",0],["Registrar el depósito de equipaje en tránsito",0],["Recibir y entregar paquetes",0],["Manejar los despiertes en ausencia de Telefonía",0],
+ ["Trasladar el equipaje de la puerta a la habitación",1],["Mostrarle al huésped luces, aire, caja de seguridad y minibar",1],["Avisar a Recepción cuándo el cuarto quedó libre",1],["Llevar diarios, revistas y paquetes a las habitaciones",1],
+ ["Recibir al huésped en la puerta y abrir la puerta del vehículo",2],["Controlar quién entra al hotel",2],["Conseguir taxi o remis cuando el huésped lo pide",2],["Bajar el equipaje del auto y pasárselo al bellboy",2],
+ ["Recibir el vehículo y entregar el ticket al huésped",3],["Registrar estado y ubicación del auto antes de moverlo",3],["Custodiar las llaves en tablero cerrado y bajo registro",3],["Acercar el auto a la puerta cuando el huésped avisa que sale",3]
+];
+var CASO_PQ=[
+ {s:"Un cadete deja en Conserjería un sobre para «Sra. Carolina Paz». ¿Qué hacés primero?",o:["Verificás el destinatario contra la lista de huéspedes","Lo subís a la primera habitación que te parezca","Lo dejás sobre el mostrador hasta que alguien lo reclame"],a:0,e:"Paso 1: verificar si el destinatario está in house, tiene reserva futura o ya se retiró."},
+ {s:"La Sra. Paz está in house, en la 305, pero salió. ¿Qué hacés con el sobre?",o:["Lo registrás en la planilla, lo custodiás en lugar seguro y se lo entregás contra firma cuando vuelva","Lo pasás por debajo de la puerta de la 305","Se lo das a la mucama del piso para que lo deje adentro"],a:0,e:"Registrar fecha, hora, remitente y quién recibe; custodiar en un lugar seguro; entregar contra firma."},
+ {s:"El cadete, antes de irse, pregunta: «¿La señora está alojada acá? ¿En qué habitación, así lo anoto?»",o:["No informás si está alojada ni en qué habitación","Le confirmás que sí, pero no le decís la habitación","Le decís la habitación: total, ya trajo el sobre"],a:0,e:"Regla de privacidad: jamás se informa a terceros si un huésped está o no alojado."},
+ {s:"Llega un paquete para el Sr. Esteban Molina. Tiene reserva para el jueves; todavía no llegó.",o:["Se guarda junto a su reserva","Se rechaza: no es huésped","Se abre para ver si es urgente"],a:0,e:"Si el huésped aún no llegó, la correspondencia se guarda junto a su reserva."},
+ {s:"Llega una carta para una huésped que hizo el check out ayer.",o:["Se intenta el reenvío","Se tira","Se guarda por si vuelve algún día"],a:0,e:"Si ya se retiró, se intenta el reenvío."},
+ {s:"Un hombre pide la valija que dejó «su esposa, de la 207». No tiene el comprobante.",o:["No se la entregás: sin comprobante no se devuelve, y nunca sin verificar la identidad","Se la das si describe bien la valija","Se la das si sabe el número de habitación"],a:0,e:"Cada bulto tiene su troquel y el huésped, su copia. Nunca se entrega equipaje ni llaves sin verificar la identidad."}
+];
+var EQ_ESC=["La señora Paz, de la 305, hizo el check out a las 10 y su vuelo sale a la noche. Deja 2 valijas y 1 bolso de mano.","El señor Quiroga llegó a las 9 de la mañana y su habitación, la 101, todavía no está lista. Deja 1 valija.","La familia Ibáñez, de la 205, ya hizo el check out y va a pasear hasta las 18 h. Dejan 4 bultos."];
+function equipajeForm(){
+  var root=h("div"), esc=0;
+  function draw(aviso){
+    root.textContent="";
+    var F={nom:h("input",{type:"text",autocomplete:"off"}),hab:h("input",{type:"text",inputmode:"numeric",autocomplete:"off"}),bul:h("input",{type:"number",min:"1",max:"12",inputmode:"numeric"}),hor:h("input",{type:"time",value:hhmm()}),
+      lug:sel(["Detrás del mostrador de Conserjería","En el pasillo, junto al ascensor","En el depósito de equipaje, con llave"]),tro:h("input",{type:"checkbox"}),cop:h("input",{type:"checkbox"})};
+    var L={nom:field("Nombre del huésped",F.nom),hab:field("Habitación",F.hab),bul:field("Cantidad de bultos",F.bul),hor:field("Hora de ingreso",F.hor),lug:field("Dónde lo guardás",F.lug)};
+    var out=h("div");
+    function guardar(){
+      var miss=[], k; out.textContent="";
+      for(k in L){ var bad=!String(F[k].value).trim(); L[k].classList.toggle("err",bad); if(bad&&miss.length===0) miss.push("Faltan datos en la planilla: toda pieza guardada se anota con cantidad de bultos, nombre, habitación y hora de ingreso."); }
+      if(F.lug.value&&!/depósito/.test(F.lug.value)){ L.lug.classList.add("err"); miss.push("Lugar de guarda: nunca detrás del mostrador ni en un pasillo. Va en un cuarto con llave, de acceso restringido al personal del sector."); }
+      if(!F.tro.checked) miss.push("Troquel: cada bulto se identifica con su número.");
+      if(!F.cop.checked) miss.push("Copia: hay que entregarle el comprobante al huésped; sin ese comprobante no se devuelve el equipaje.");
+      if(miss.length){ out.appendChild(h("div",{class:"msg bad"},"El equipaje no quedó registrado:",h("ul",null,miss.map(function(m){return h("li",{text:m});})))); return; }
+      var base=101+S.eq.reduce(function(a,e){return a+e.tr.length;},0), tr=[]; for(var i=0;i<+F.bul.value;i++) tr.push(base+i);
+      S.eq.unshift({nom:F.nom.value.trim(),hab:F.hab.value.trim(),tr:tr,ing:F.hor.value,out:""}); save(); esc=(esc+1)%EQ_ESC.length; draw();
+    }
+    root.appendChild(h("div",{class:"q"},h("div",{class:"n"},"Registrar un equipaje en tránsito ",ej()),
+      h("div",{class:"say"},h("b",{text:"La situación"}),EQ_ESC[esc]),
+      h("div",{class:"form"},h("div",{class:"two"},L.nom,L.hab),h("div",{class:"two"},L.bul,L.hor),L.lug,
+        h("label",{class:"ck"},F.tro,"Coloqué un troquel numerado en cada bulto."),h("label",{class:"ck"},F.cop,"Le entregué al huésped la copia del comprobante."),
+        h("div",{class:"row"},h("button",{class:"btn pri",type:"button",text:"Registrar",onclick:guardar}),h("button",{class:"btn",type:"button",text:"Otra situación",onclick:function(){esc=(esc+1)%EQ_ESC.length;draw();}})),out)));
+    if(aviso) root.appendChild(h("div",{class:"msg "+aviso[0],text:aviso[1]}));
+    if(S.eq.length){
+      root.appendChild(h("h4",{text:"Planilla de equipaje en depósito"}));
+      S.eq.forEach(function(e,ix){
+        root.appendChild(h("div",{class:"item"},h("div",{class:"d",text:e.nom+" · hab. "+e.hab+" · "+e.tr.length+" bulto"+(e.tr.length>1?"s":"")}),
+          h("button",{class:"btn",type:"button",text:"Borrar","aria-label":"Borrar registro de "+e.nom,onclick:function(){S.eq.splice(ix,1);save();draw();}}),
+          h("div",{class:"m",text:"Troqueles "+e.tr.join(", ")+" · ingreso "+e.ing+" h · retiro "+(e.out?e.out+" h":"pendiente")}),
+          e.out?null:h("div",{class:"row",style:"grid-column:1/-1"},
+            h("button",{class:"btn pri",type:"button",text:"Viene a retirar con el comprobante",onclick:function(){e.out=hhmm();save();draw(["ok","Entregado contra comprobante. Quedó anotada la hora de retiro."]);}}),
+            h("button",{class:"btn",type:"button",text:"Viene a retirar sin el comprobante",onclick:function(){draw(["bad","No se entrega: sin ese comprobante no se devuelve el equipaje, y nunca se entrega sin verificar la identidad."]);}}))));
+      });
+    }
+  }
+  draw(); return root;
+}
+function vConserjeria(){
+  var m=S.mode.conserjeria||"estudiar", v=h("div");
+  v.appendChild(h("h2",{text:"Conserjería"}));
+  v.appendChild(P("El departamento de servicios al huésped: está en el lobby y brinda información y ayuda durante toda la estadía. Su estructura: el conserje a cargo, con maletero (bellboy), portero (doorman) y valet parking.","lead"));
+  v.appendChild(ref("Clase 8 · Unidad 4 · 4.1"));
+  v.appendChild(seg("conserjeria")); v.appendChild(glosario("conserjeria","Conserjería"));
+  if(m==="practicar"){
+    v.appendChild(H3("Registrar un equipaje en tránsito")); v.appendChild(equipajeForm());
+    v.appendChild(H3("¿De quién es la tarea?")); v.appendChild(classGame("Personal de Conserjería",["Conserje","Bellboy","Doorman","Valet"],shuffle(TAREAS).slice(0,8),"Tocá a quién le corresponde cada tarea."));
+    v.appendChild(H3("Caso: llegó un paquete")); v.appendChild(caseGame("pq","Correspondencia y equipaje",CASO_PQ));
+    v.appendChild(H3("Preguntas de repaso")); v.appendChild(quiz("conserjeria"));
+    return v;
+  }
+  v.appendChild(H3("Tareas del conserje"));
+  v.appendChild(box("Qué hace",["Asesoramiento de cualquier índole al pasajero","Conocimiento profundo de los servicios del hotel","Rol de «guía turístico»: restaurantes, espectáculos, traslados, compras","Manejo de despiertes en ausencia de Telefonía","Registro del depósito de equipaje en tránsito","Recepción y entrega de paquetes"]));
+  v.appendChild(note("En hoteles chicos una misma persona cubre varios de estos puestos, pero las funciones siguen existiendo: el organigrama describe tareas, no cantidad de empleados."));
+
+  v.appendChild(H3("Depósito de equipaje"));
+  v.appendChild(P("El huésped que ya hizo el check out pero cuyo vuelo sale a la noche, o el que llega temprano y su habitación no está lista, deja su equipaje a resguardo de la Conserjería."));
+  v.appendChild(steps("equip",EQ_STEPS));
+  v.appendChild(modelos(modelo("Planilla de depósito de equipaje",function(){ return sheet("Registro de equipaje en tránsito","Las columnas son los datos que pide la clase; las filas son inventadas.",true,
+    table(["Troquel","Bultos","Nombre","Hab.","Ingreso","Retiro"],[["101 a 103","3","Paz, Carolina","305","10:05","19:30"],["104","1","Quiroga, Raúl","101","09:10","14:00"],["105 a 108","4","Ibáñez, familia","205","11:20",""]],true),
+    h("p",{class:"sh-foot",text:"Cada bulto lleva su troquel y el huésped se queda con la copia."})); })));
+
+  v.appendChild(H3("Correspondencia y paquetes"));
+  v.appendChild(P("La Conserjería recibe, registra y entrega la correspondencia y los paquetes dirigidos a los huéspedes y al hotel."));
+  v.appendChild(steps("corr",CORR_STEPS));
+  v.appendChild(table(["El destinatario…","Qué se hace"],[["Está in house","Se registra, se custodia y se entrega contra firma."],["Aún no llegó","La correspondencia se guarda junto a su reserva."],["Ya se retiró","Se intenta el reenvío."]],true));
+  v.appendChild(modelos(modelo("Planilla de correspondencia y paquetes",function(){ return sheet("Registro de correspondencia y paquetes","Las columnas son los datos que pide la clase; las filas son inventadas.",true,
+    table(["Fecha","Hora","Remitente","Para","Recibió","Firma de entrega"],[["12/11","11:40","Estudio Ferrari","Paz, C. · 305","Valeria M.","C. Paz"],["12/11","16:15","Correo privado","Molina, E. · reserva del jueves","Tomás R.",""]],true),
+    h("p",{class:"sh-foot",text:"El paquete del Sr. Molina queda guardado junto a su reserva hasta que llegue."})); })));
+
+  v.appendChild(H3("Normas de seguridad del área"));
+  v.appendChild(P("El conserje maneja bienes ajenos (equipaje, paquetes, correspondencia y, a veces, llaves): por eso todo movimiento se registra en una planilla y se respalda con troqueles o firmas."));
+  v.appendChild(box("Normas básicas",["Verificar la identidad antes de entregar equipaje o llaves.","No dejar el puesto desatendido.","Vigilancia discreta del lobby, en coordinación con Seguridad.","Confidencialidad absoluta sobre la información de los huéspedes."]));
+  v.appendChild(P("El control de calidad se apoya en los listados propios del sector: registro de equipaje, de correspondencia y paquetes, de encargos y solicitudes, y el libro de novedades de Conserjería."));
+
+  v.appendChild(H3("Personal uniformado"));
+  v.appendChild(grid(
+    box("Bellboy · maletero",["Traslada el equipaje desde la puerta a la habitación y a la inversa en la salida.","Acompaña al huésped a la habitación y le muestra luces, aire, caja de seguridad y minibar.","Asiste en el check in y el check out: avisa a Recepción cuándo el cuarto quedó libre.","Lleva diarios, revistas y paquetes a las habitaciones."]),
+    box("Doorman · portero",["Recibe y despide al huésped en la puerta y abre la puerta del vehículo.","Baja el equipaje del auto y se lo pasa al bellboy.","Ordena el movimiento de vehículos en la entrada y llama al valet.","Controla quién entra: es el primer filtro de seguridad del hotel.","Orienta al que llega y consigue taxi o remis."]),
+    box("Valet parking",["Recibe el vehículo y entrega el ticket al huésped.","Registra estado y ubicación antes de mover el auto: es respaldo ante un reclamo.","Lo estaciona en la cochera del hotel o contratada.","Lo acerca a la puerta cuando el huésped avisa que sale.","Custodia las llaves en tablero cerrado y bajo registro."])));
+
+  v.appendChild(H3("Les Clefs d'Or"));
+  v.appendChild(P("La conserjería es la única función del Front Office con asociación profesional propia. Su distintivo son las llaves cruzadas doradas en la solapa."));
+  v.appendChild(box("Lo esencial",["Nace en Francia, en los años 20, cuando once conserjes se asocian. Hoy reúne unos 4.000 miembros en más de 40 países.","Les Clefs d'Or Argentina: sección nacional fundada en 2005; coordina además las filiales de Chile, Perú, Ecuador y Uruguay.","La integran conserjes en ejercicio de hoteles cinco estrellas.","Las llaves se obtienen por examen y antigüedad comprobada en el puesto."]));
+  v.appendChild(note("Hotelería hoy: el conserje moderno compite con Google Maps y TripAdvisor, y gana por personalización: conseguir la mesa imposible, armar el itinerario a medida."));
+
+  v.appendChild(H3("Los No de Conserjería"));
+  v.appendChild(losNo(["Nunca guardes equipaje detrás del mostrador ni en un pasillo.","Nunca devuelvas un equipaje sin el comprobante.","Nunca entregues equipaje ni llaves sin verificar la identidad.","Nunca dejes el puesto desatendido.","Jamás informes a terceros si un huésped está o no alojado.","Jamás comentes información de los huéspedes: la confidencialidad es absoluta.","Nunca muevas un auto sin registrar antes su estado y ubicación."]));
+  return v;
+}
+
+/* ================= pestaña 5: TELEFONÍA (Clase 8 · Conserjería y tel) ================= */
+var TEL_STEPS=[
+ ["Contestar según las pautas de atención.","Para quien llama, la telefonista es el hotel."],
+ ["Preguntar con quién desea hablar.","De eso depende a dónde se deriva la llamada."],
+ ["Si es con un huésped: ubicarlo en la lista de in house, llamar a la habitación y esperar que atienda.","Jamás se comunica una llamada sin consultar si el huésped la acepta."],
+ ["Si es con un departamento: llamar al sector y esperar que atienda.","Así la llamada no queda sonando en un interno vacío."],
+ ["Transferir solo después de que atienden del otro lado.","Si no contesta, se toma un mensaje: quien llama nunca queda sin respuesta."]
+];
+var MSG_STEPS=[
+ ["Chequear que el huésped esté in house.","Un mensaje para alguien que no está alojado no tiene a quién entregarse."],
+ ["Tomar el mensaje y repetirlo para verificar los datos.","El mensaje se anota textual, nunca interpretado ni resumido."],
+ ["Entregarlo cuando el huésped vuelva al hotel.","Sin fecha y hora no se sabe si el mensaje sigue vigente."]
+];
+var DESP_STEPS=[
+ ["Anotar y programar: en la planilla de despiertes, habitación, horario, nombre del huésped, recepcionista a cargo y quién llama; programar la alarma.","Un despierte fallido puede costar un vuelo o una reunión: planilla y alarma dan doble respaldo."],
+ ["Llamar en horario, aplicando el speech de atención acordado.","El huésped organizó su mañana contando con ese llamado."],
+ ["Ofrecer repetir el llamado a los 5 minutos.","Por si volvió a dormirse."]
+];
+var FRASES=[
+ ["Poner en espera","«¿Me permite dejarlo unos instantes en espera, por favor?»","«May I put you on hold for a moment, please?»"],
+ ["Retomar la llamada","«Gracias por esperar, señor Pérez.»","«Thank you for holding, Mr. Pérez.»"],
+ ["Transferir","«Lo comunico con Conserjería, un momento por favor.»","«I am putting you through to the Concierge, one moment please.»"],
+ ["La línea no responde","«No logro comunicarlo, ¿desea dejar un mensaje o que lo intente nuevamente?»","«There is no answer. Would you like to leave a message or shall I try again?»"],
+ ["Tomar un mensaje","«Le repito los datos para confirmar: señor Pérez, habitación 210, a las 15:40.»","«Let me repeat the details: Mr. Pérez, room 210, at 3:40 p.m.»"],
+ ["Despedida","«Gracias por comunicarse, señor Pérez, que tenga muy buena tarde.»","«Thank you for calling, Mr. Pérez, have a very good afternoon.»"]
+];
+var CASO_TEL=[
+ {s:"Estás en Telefonía del Monserrat. Suena una línea externa mientras terminás de anotar algo. ¿Cuándo atendés?",o:["Antes del tercer ring","Cuando termines de anotar","Al quinto ring, para no parecer ansiosa"],a:0,e:"Primera pauta: contestar a tiempo, antes del tercer ring."},
+ {s:"Quien llama pide hablar con el señor Juan Pérez. ¿Qué hacés?",o:["Lo ubicás en la lista de in house, llamás a la habitación y esperás que atienda","Transferís directo al interno de la 210","Le decís que el señor Pérez está en la 210 y que llame directo"],a:0,e:"Se ubica en la lista de in house, se llama a la habitación y se transfiere solo después de que atienden."},
+ {s:"Mientras esperás, la persona pregunta: «¿En qué habitación está? Soy el hermano.»",o:["No das el dato: ni habitación, ni horarios, ni si está alojado","Se lo decís: es un familiar","Le decís solo el piso"],a:0,e:"Cuidado crítico: nunca se brindan datos del huésped. Es una regla de seguridad y privacidad."},
+ {s:"En la 210 no contesta nadie. ¿Qué frase usás?",o:["«No logro comunicarlo, ¿desea dejar un mensaje o que lo intente nuevamente?»","«No está. Llame más tarde.»","«Debe haber salido, vuelve a eso de las 8.»"],a:0,e:"Si no contesta, se toma un mensaje. Y no se informan horarios del huésped."},
+ {s:"Otra llamada: tenés que averiguar algo y dejaste a la persona en espera. Ya pasaron 30 segundos.",o:["Retomás la llamada, informás y volvés a preguntar si desea seguir esperando","La dejás: ya casi tenés el dato","Cortás y esperás que vuelva a llamar"],a:0,e:"La espera no debe superar los 30 segundos; luego se informa y se vuelve a preguntar."},
+ {s:"La huésped de la 305 pidió «No molestar» para sus llamadas hasta las 17 h. Entra un llamado para ella.",o:["Tomás el mensaje; el pedido queda registrado con su horario y avisado al turno siguiente","Se lo pasás igual si dicen que es importante","Decís que la huésped ya no está alojada"],a:0,e:"Con «No molestar» se toma mensaje de todos; se registra por cuánto tiempo rige y se comunica al turno siguiente."},
+ {s:"6:30 h. Hacés el despierte de la 207 y el huésped atiende medio dormido. ¿Qué le ofrecés?",o:["Repetir el llamado a los 5 minutos","Nada: ya atendió","Llamarlo de nuevo en una hora"],a:0,e:"Tercer paso del despierte: ofrecer repetir el llamado a los 5 minutos."}
+];
+function mensajeForm(){
+  var root=h("div");
+  function draw(){
+    root.textContent="";
+    var hoy=new Date();
+    var F={inh:h("input",{type:"checkbox"}),par:h("input",{type:"text",autocomplete:"off"}),hab:h("input",{type:"text",inputmode:"numeric",autocomplete:"off"}),de:h("input",{type:"text",autocomplete:"off"}),emp:h("input",{type:"text",autocomplete:"off",placeholder:"Opcional"}),
+      tel:h("input",{type:"text",inputmode:"tel",autocomplete:"off"}),fec:h("input",{type:"date",value:iso(hoy)}),hor:h("input",{type:"time"}),msg:h("textarea"),rec:h("input",{type:"text",autocomplete:"off",placeholder:"Tu nombre y sector"}),rep:h("input",{type:"checkbox"})};
+    var ACC=["Devolver el llamado","Volverá a llamar","Urgente","Pasó a visitarlo"], acc=ACC.map(function(){return h("input",{type:"checkbox"});});
+    var L={par:field("Para el señor / la señora",F.par),hab:field("Habitación",F.hab),de:field("De parte de",F.de),emp:field("Empresa",F.emp),tel:field("Teléfono de contacto",F.tel),fec:field("Fecha",F.fec),hor:field("Hora",F.hor),msg:field("Mensaje (textual)",F.msg),rec:field("Recibido por",F.rec)};
+    var WHY={par:"Para quién es: sin destinatario no hay a quién entregarlo.",hab:"Habitación: es donde se ubica al huésped para entregarle el mensaje.",de:"De parte de quién: el huésped tiene que saber quién lo llamó.",tel:"Teléfono de contacto: sin contacto, el mensaje no se puede responder.",fec:"Fecha: sin fecha y hora, no se sabe si sigue vigente.",hor:"Hora: sin fecha y hora, no se sabe si sigue vigente.",msg:"Mensaje: se anota textual, nunca interpretado ni resumido.",rec:"Recibido por: sin nombre de quien recibe, no hay responsable a quién preguntar."};
+    var out=h("div");
+    function guardar(){
+      var miss=[], k; out.textContent="";
+      if(!F.inh.checked) miss.push("Primer paso: chequear que el huésped esté in house.");
+      for(k in WHY){ var bad=!String(F[k].value).trim(); L[k].classList.toggle("err",bad); if(bad) miss.push(WHY[k]); }
+      if(!acc.some(function(a){return a.checked;})) miss.push("Acción requerida: marcá al menos una, para que el huésped sepa qué se espera de él.");
+      if(!F.rep.checked) miss.push("Falta repetirle los datos a quien llama para verificarlos.");
+      if(miss.length){ out.appendChild(h("div",{class:"msg bad"},"El mensaje no se guardó:",h("ul",null,miss.map(function(m){return h("li",{text:m});})))); return; }
+      S.msgs.unshift({n:4722+S.msgs.length,par:F.par.value.trim(),hab:F.hab.value.trim(),de:F.de.value.trim(),emp:F.emp.value.trim(),tel:F.tel.value.trim(),fec:F.fec.value,hor:F.hor.value,msg:F.msg.value.trim(),acc:ACC.filter(function(_,i){return acc[i].checked;}),rec:F.rec.value.trim(),ent:""}); save(); draw();
+    }
+    root.appendChild(h("div",{class:"q"},h("div",{class:"n",text:"Tomar un mensaje"}),
+      h("div",{class:"say"},h("b",{text:"La llamada"}),"Son las 15:40. Llama Laura Giménez, de Constructora Sur S.A., para el señor Juan Pérez, de la 210. En la habitación no contesta. Dice: «La reunión de mañana se pasa a las 10 h en la obra, no en la oficina. Confirmar antes de las 20 h.» Deja el 11 4555-2890, pide que le devuelva el llamado y avisa que es urgente."),
+      h("div",{class:"form"},h("label",{class:"ck"},F.inh,"Chequeé que el huésped está in house."),h("div",{class:"two"},L.par,L.hab),h("div",{class:"two"},L.de,L.emp),L.tel,h("div",{class:"two"},L.fec,L.hor),L.msg,
+        h("div",null,h("div",{style:"font-weight:600;font-size:.88rem"},"Acción requerida"),ACC.map(function(a,i){ return h("label",{class:"ck"},acc[i],a); })),L.rec,
+        h("label",{class:"ck"},F.rep,"Le repetí los datos a quien llamó, para confirmar."),
+        h("div",{class:"row"},h("button",{class:"btn pri",type:"button",text:"Guardar el mensaje",onclick:guardar})),out)));
+    if(S.msgs.length){
+      root.appendChild(h("h4",{text:"Mensajes tomados ("+S.msgs.length+")"}));
+      S.msgs.forEach(function(mm,ix){
+        root.appendChild(sheet("Mensaje telefónico N.° 0"+mm.n,null,null,
+          fields([["Para",mm.par],["Habitación",mm.hab],["De parte de",mm.de],["Empresa",mm.emp||"—"],["Teléfono de contacto",mm.tel],["Fecha y hora",dmy(mm.fec)+" · "+mm.hor],["Acción requerida",mm.acc.join(" · ")],["Recibido por",mm.rec],["Entregado",mm.ent||"Pendiente"]]),
+          h("div",{class:"say"},h("b",{text:"Mensaje (textual)"}),mm.msg),
+          h("div",{class:"row"},mm.ent?null:h("button",{class:"btn pri",type:"button",text:"El huésped volvió: entregar",onclick:function(){mm.ent=dmy(iso(new Date()))+" · "+hhmm();save();draw();}}),
+            h("button",{class:"btn",type:"button",text:"Borrar",onclick:function(){S.msgs.splice(ix,1);save();draw();}}))));
+      });
+    }
+  }
+  draw(); return root;
+}
+function vTelefonia(){
+  var m=S.mode.telefonia||"estudiar", v=h("div");
+  v.appendChild(h("h2",{text:"Telefonía"}));
+  v.appendChild(P("Atiende las llamadas entrantes internas y externas, asiste al huésped, maneja los despiertes y toma mensajes. Su lema: «somos la voz de la empresa».","lead"));
+  v.appendChild(ref("Clase 8 · Unidad 4 · 4.2"));
+  v.appendChild(seg("telefonia")); v.appendChild(glosario("telefonia","Telefonía"));
+  if(m==="practicar"){
+    v.appendChild(H3("Armar el speech"));
+    v.appendChild(orderGame("speech para una llamada externa",["Buenas tardes","Hotel Monserrat","habla Valeria","¿en qué lo puedo ayudar?"],true));
+    v.appendChild(orderGame("speech para una llamada interna",["Buenas tardes","Telefonía","habla Valeria","¿en qué lo puedo ayudar?"],true));
+    v.appendChild(H3("Tomar un mensaje")); v.appendChild(mensajeForm());
+    v.appendChild(H3("Caso: un turno en la central")); v.appendChild(caseGame("tel","Telefonía",CASO_TEL));
+    v.appendChild(H3("Preguntas de repaso")); v.appendChild(quiz("telefonia"));
+    return v;
+  }
+  v.appendChild(H3("Pautas de atención telefónica"));
+  v.appendChild(box("Las cinco pautas",["Contestar a tiempo: antes del tercer ring.","Speech de identificación.","Sonreír, no reír: la sonrisa «se escucha» en el tono.","Tono de voz claro, calmo, ni monótono ni exaltado.","Atención personalizada: usar el nombre cuando se conoce."]));
+  v.appendChild(note("Tres reglas: atender antes del tercer timbre · usar el apellido del huésped · nunca más de 30 segundos en espera."));
+
+  v.appendChild(H3("El speech telefónico"));
+  v.appendChild(P("El saludo cambia según de dónde viene la llamada; el resto del repertorio es siempre el mismo."));
+  v.appendChild(grid(
+    h("div",{class:"box"},h("h4",{text:"Llamada externa"}),P("Momento del día + nombre del hotel + nombre de quien atiende + ofrecimiento de ayuda."),say("«Buenas tardes, Hotel Monserrat, habla Valeria, ¿en qué lo puedo ayudar?»","Español"),say("«Good afternoon, Hotel Monserrat, Valeria speaking, how may I help you?»","English")),
+    h("div",{class:"box"},h("h4",{text:"Llamada interna"}),P("Momento del día + nombre del departamento + nombre de quien atiende + ofrecimiento de ayuda."),say("«Buenas tardes, Telefonía, habla Valeria, ¿en qué lo puedo ayudar?»","Español"),say("«Good afternoon, switchboard, Valeria speaking, how may I help you?»","English"))));
+  v.appendChild(h("h4",{text:"Las frases que más se usan en el turno"}));
+  v.appendChild(table(["Situación","En español","In English"],FRASES,true));
+
+  v.appendChild(H3("Atender y transferir llamadas"));
+  v.appendChild(steps("tel5",TEL_STEPS));
+  v.appendChild(note("Cuidado crítico: nunca brindar datos del huésped (número de habitación, horarios, si está o no alojado). Es una regla de seguridad y privacidad. Si no contesta, tomar un mensaje."));
+
+  v.appendChild(H3("Toma de mensajes"));
+  v.appendChild(steps("msg3",MSG_STEPS));
+  v.appendChild(box("Por qué cada campo importa",["Sin contacto, el mensaje no se puede responder.","Sin fecha y hora, no se sabe si sigue vigente.","Sin nombre de quien recibe, no hay responsable a quién preguntar."]));
+  v.appendChild(modelos(modelo("Planilla de mensaje telefónico",function(){ return sheet("Mensaje telefónico N.° 04721","La planilla completa, como está en la clase.",false,
+    fields([["Para el señor / la señora","Pérez, Juan"],["Habitación","210"],["De parte de","Laura Giménez"],["Empresa","Constructora Sur S.A."],["Teléfono de contacto","11 4555-2890"],["Fecha y hora","19/09 · 15:40"],["Acción requerida","Devolver el llamado · Urgente"],["Recibido por","Valeria M. — Telefonía"],["Entregado","19/09 · 19:15"]]),
+    h("div",{class:"say"},h("b",{text:"Mensaje (textual)"}),"«La reunión de mañana se pasa a las 10 h en la obra, no en la oficina. Confirmar antes de las 20 h.»")); })));
+
+  v.appendChild(H3("Despiertes (wake up calls)"));
+  v.appendChild(P("Los sistemas pueden ser automatizados o manuales."));
+  v.appendChild(steps("desp",DESP_STEPS));
+  v.appendChild(modelos(modelo("Planilla de despiertes",function(){ return sheet("Planilla de despiertes","Las columnas son los campos que pide la clase; las filas son inventadas.",true,
+    table(["Hab.","Horario","Huésped","Recepcionista a cargo","Quién llama","Hecho"],[["207","06:30","Vera, L.","Tomás R.","Valeria M.","Sí · repetido 06:35"],["305","07:00","Paz, C.","Tomás R.","Valeria M.","Sí"],["101","07:45","Quiroga, R.","Tomás R.","Valeria M.",""]],true),
+    h("p",{class:"sh-foot",text:"Además de anotarlo, se programa la alarma."})); })));
+
+  v.appendChild(H3("Otras pautas y solicitudes especiales"));
+  v.appendChild(grid(box("Vocabulario y conducta","No debe tutearse a nadie; mientras se atiende no se come, bebe, bosteza ni masca chicle."),box("Devolver las llamadas ofrecidas","Si se promete devolver un llamado, debe hacerse."),box("Espera","No debe superar los 30 segundos; luego se informa y se vuelve a preguntar."),
+    box("Regla de oro de privacidad","Jamás se comunica una llamada sin consultar si el huésped la acepta."),box("«No molestar»","Se toma mensaje de todos; registrar por cuánto tiempo rige y comunicarlo al turno siguiente."),box("Material del puesto","Lápiz y papel, impresos, lista de huéspedes, terminal con información de huéspedes, carpeta de información y libro de novedades.")));
+  v.appendChild(note("Actualización 2026: el circuito clásico (líneas troncales, conmutador, tarifador) fue reemplazado por telefonía IP integrada al PMS y por WhatsApp o chat; las llamadas por cobrar desaparecieron. Lo que sigue 100 % vigente y evaluable: el speech, el tono y las reglas de privacidad del huésped, que aplican igual en un chat que en una llamada."));
+
+  v.appendChild(H3("Los No de Telefonía"));
+  v.appendChild(losNo(["Nunca brindes datos del huésped: número de habitación, horarios ni si está o no alojado.","Jamás comuniques una llamada sin consultar si el huésped la acepta.","Nunca transfieras antes de que atiendan del otro lado.","Nunca dejes a nadie más de 30 segundos en espera.","Nunca tutees a quien llama.","Nunca comas, bebas, bosteces ni masques chicle mientras atendés.","Nunca interpretes ni resumas un mensaje: se anota textual.","Jamás dejes sin devolver un llamado que prometiste devolver."]));
+  return v;
+}
+
+/* ---------- navegación ---------- */
+var VIEWS={reservas:vReservas,checkin:vCheckin,checkout:vCheckout,conserjeria:vConserjeria,telefonia:vTelefonia}, cur="reservas";
+function render(){
+  var nav=document.getElementById("tabs"), main=document.getElementById("main");
+  nav.textContent="";
+  TABS.forEach(function(t){
+    var b=h("button",{type:"button",role:"tab","data-tab":t.id,"aria-selected":String(t.id===cur),onclick:function(){cur=t.id;try{history.replaceState(null,"","#"+t.id);}catch(e){} render();window.scrollTo(0,0);}},h("span",{class:"ic","aria-hidden":"true",html:'<svg viewBox="0 0 24 24">'+t.ic+'</svg>'}),t.label);
+    nav.appendChild(b);
+  });
+  main.textContent=""; main.appendChild(VIEWS[cur]());
+}
+var hsh=(location.hash||"").replace("#",""); if(VIEWS[hsh]) cur=hsh;
+render();
+})();
+</script>
+
+</body>
+</html>
