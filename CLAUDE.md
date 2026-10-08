@@ -9,7 +9,7 @@ App web de estudio de Front Office para alumnos de primer año de la materia **D
 Es la app **hermana de HK Planner** (Housekeeping): misma estructura, mismo hotel ficticio, mismas reglas de trabajo, con la paleta en verdes.
 
 - Repositorio: https://github.com/hhavry/fo-planner (rama `main`)
-- Público: pendiente de conectar a Vercel (se espera https://fo-planner.vercel.app)
+- Público: https://fo-planner-three.vercel.app (Vercel publica solo cada push a `main`; la dirección `fo-planner.vercel.app` pertenece a otro proyecto)
 - App hermana: https://hk-planner.vercel.app · https://github.com/hhavry/hk-planner
 
 El «Hotel Monserrat» es **ficticio**: 24 habitaciones en 3 pisos (101–108, 201–208, 301–308).
