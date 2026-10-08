@@ -49,9 +49,13 @@ p{margin:0 0 10px;max-width:65ch}
 a{color:var(--accent)}
 .lead{color:var(--muted)}
 .ref{display:block;margin:10px 0 6px;font-size:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.seg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px;margin:14px 0 4px}
-.seg button{font:600 .9rem var(--body);border:0;background:transparent;color:var(--muted);padding:7px 16px;border-radius:999px;cursor:pointer}
-.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.modebar{background:var(--surface);border:2px solid var(--accent);border-radius:14px;padding:12px;margin:18px 0 8px;display:grid;gap:10px}
+.modebar .mb-l{font:700 .75rem var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:center}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--sunk);border-radius:999px;padding:4px;gap:4px}
+.seg button{font:700 1.02rem var(--body);border:0;background:transparent;color:var(--ink);padding:11px 8px;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
+.modebar .glb>.btn.mod{width:100%;justify-content:center;text-align:center;border-width:2px;padding:10px 12px;font-size:.95rem;background:var(--bg)}
+.modebar .gl{margin:10px 0 0}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
 .chip{font:600 .85rem var(--body);border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:6px 12px;border-radius:999px;cursor:pointer;text-align:left}
 .chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
@@ -286,6 +290,7 @@ var GTAB={
 };
 
 /* ---------- componentes ---------- */
+function modeBar(tab,nombre){ return h("div",{class:"modebar"},h("div",{class:"mb-l",text:"¿Qué querés hacer?"}),seg(tab),glosario(tab,nombre)); }
 function seg(tab){
   var m=S.mode[tab]||"estudiar";
   function b(id,l){ return h("button",{type:"button","aria-pressed":String(m===id),text:l,onclick:function(){S.mode[tab]=id;save();render();window.scrollTo(0,0);}}); }
@@ -339,7 +344,7 @@ function sheet(title,sub,isEj){
 function fields(pairs){ return h("div",{class:"sh-grid"},pairs.map(function(p){ return h("div",null,h("small",{text:p[0]}),p[1]||" "); })); }
 function glosario(tab,nombre){
   var terms=GTAB[tab], open=false, panel=h("div"), b=h("button",{class:"btn mod",type:"button","aria-expanded":"false"});
-  b.innerHTML=IC_DOC; b.appendChild(document.createTextNode("Glosario de "+nombre+" ("+terms.length+" términos)"));
+  b.innerHTML=IC_DOC; b.appendChild(h("span",null,"Glosario de "+nombre+" ",h("span",{style:"white-space:nowrap",text:"("+terms.length+" términos)"})));
   function draw(f){
     var dl=h("dl"); f=(f||"").toLowerCase(); var n=0;
     terms.forEach(function(t){ if(f&&(t+" "+GLOS[t]).toLowerCase().indexOf(f)<0) return; n++; dl.appendChild(h("dt",{text:t})); dl.appendChild(h("dd",{text:GLOS[t]})); });
@@ -352,7 +357,7 @@ function glosario(tab,nombre){
     inp.addEventListener("input",function(){ list.textContent=""; list.appendChild(draw(inp.value)); });
     panel.appendChild(h("div",{class:"gl"},inp,list));
   });
-  return h("div",{style:"margin:12px 0 0"},b,panel);
+  return h("div",{class:"glb"},b,panel);
 }
 /* preguntas de repaso */
 function quiz(tab){
@@ -700,7 +705,7 @@ function vReservas(){
   v.appendChild(h("h2",{text:"Reservas"}));
   v.appendChild(P("La puerta de entrada comercial del hotel: cómo se toma una reserva, qué se vende, a qué tarifa y qué se hace cuando sobran o faltan habitaciones.","lead"));
   v.appendChild(ref("Clase 3 y Clase 4 · Unidad 2"));
-  v.appendChild(seg("reservas")); v.appendChild(glosario("reservas","Reservas"));
+  v.appendChild(modeBar("reservas","Reservas"));
   if(m==="practicar"){
     v.appendChild(H3("Tomar una reserva")); v.appendChild(reservaForm());
     v.appendChild(H3("Planning de ocupación")); v.appendChild(planning());
@@ -871,7 +876,7 @@ function vCheckin(){
   v.appendChild(h("h2",{text:"Check in"}));
   v.appendChild(P("La Recepción es el centro de operaciones del hotel y el primer y último contacto del huésped. Acá: los turnos, el ingreso del huésped, la ficha de registro y la garantía de estadía.","lead"));
   v.appendChild(ref("Clase 6-7 · Unidad 3 · 3.1 a 3.4"));
-  v.appendChild(seg("checkin")); v.appendChild(glosario("checkin","Check in"));
+  v.appendChild(modeBar("checkin","Check in"));
   if(m==="practicar"){
     v.appendChild(H3("Ordenar los pasos"));
     v.appendChild(orderGame("check in con reserva, los 10 pasos",["Recibir al huésped y pedir nombre y apellido","Buscar la reserva en el sistema","Chequear noches, tipo de habitación y tarifa","Registrar: ficha de registro y documentación","Reconfirmar los cargos en voz alta","Garantizar la estadía: preautorización o depósito","Entregar las llaves y describir las facilidades","Llamar a Conserjería por el equipaje","Pasar los mensajes recibidos antes del arribo","Desear una excelente estadía"]));
@@ -1010,7 +1015,7 @@ function vCheckout(){
   v.appendChild(h("h2",{text:"Check out"}));
   v.appendChild(P("La salida del huésped: preparar la cuenta, cobrar, facturar y despedir. Y lo que rodea a la caja: folios, auditoría nocturna, quejas y fidelización.","lead"));
   v.appendChild(ref("Clase 8 · Unidad 3 · 3.4 a 3.9"));
-  v.appendChild(seg("checkout")); v.appendChild(glosario("checkout","Check out"));
+  v.appendChild(modeBar("checkout","Check out"));
   if(m==="practicar"){
     v.appendChild(H3("¿Quién paga esto?")); v.appendChild(pagaGame());
     v.appendChild(H3("Caso: una queja en el mostrador")); v.appendChild(caseGame("qj","Queja",CASO_QJ));
@@ -1145,7 +1150,7 @@ function vConserjeria(){
   v.appendChild(h("h2",{text:"Conserjería"}));
   v.appendChild(P("El departamento de servicios al huésped: está en el lobby y brinda información y ayuda durante toda la estadía. Su estructura: el conserje a cargo, con maletero (bellboy), portero (doorman) y valet parking.","lead"));
   v.appendChild(ref("Clase 8 · Unidad 4 · 4.1"));
-  v.appendChild(seg("conserjeria")); v.appendChild(glosario("conserjeria","Conserjería"));
+  v.appendChild(modeBar("conserjeria","Conserjería"));
   if(m==="practicar"){
     v.appendChild(H3("Registrar un equipaje en tránsito")); v.appendChild(equipajeForm());
     v.appendChild(H3("¿De quién es la tarea?")); v.appendChild(classGame("Personal de Conserjería",["Conserje","Bellboy","Doorman","Valet"],shuffle(TAREAS).slice(0,8),"Tocá a quién le corresponde cada tarea."));
@@ -1272,7 +1277,7 @@ function vTelefonia(){
   v.appendChild(h("h2",{text:"Telefonía"}));
   v.appendChild(P("Atiende las llamadas entrantes internas y externas, asiste al huésped, maneja los despiertes y toma mensajes. Su lema: «somos la voz de la empresa».","lead"));
   v.appendChild(ref("Clase 8 · Unidad 4 · 4.2"));
-  v.appendChild(seg("telefonia")); v.appendChild(glosario("telefonia","Telefonía"));
+  v.appendChild(modeBar("telefonia","Telefonía"));
   if(m==="practicar"){
     v.appendChild(H3("Armar el speech"));
     v.appendChild(orderGame("speech para una llamada externa",["Buenas tardes","Hotel Monserrat","habla Valeria","¿en qué lo puedo ayudar?"],true));
