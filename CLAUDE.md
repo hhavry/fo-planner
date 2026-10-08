@@ -33,7 +33,7 @@ El «Hotel Monserrat» es **ficticio**: 24 habitaciones en 3 pisos (101–108, 2
 
 ## Estructura de la app
 
-Cinco pestañas, una por tema. Todas tienen modo **Estudiar** y modo **Practicar**, y un botón **Glosario** propio de la pestaña, con buscador. El selector de modo y el glosario van juntos en un recuadro destacado con borde verde, «¿Qué querés hacer?» (`modeBar`), a ancho completo: pedido de la docente para que se vean bien.
+Cinco pestañas, una por tema. Todas tienen modo **Estudiar** y modo **Practicar**, y un botón **Glosario** propio de la pestaña, con buscador. El selector de modo va en un recuadro destacado con borde verde, «¿Qué querés hacer?», y el botón del glosario va debajo, fuera del recuadro, a ancho completo (`modeBar`): pedido de la docente para que se vean bien.
 
 | Pestaña | Estudiar | Practicar | Funciones en el código |
 | --- | --- | --- | --- |

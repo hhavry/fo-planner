@@ -54,8 +54,9 @@ a{color:var(--accent)}
 .seg{display:grid;grid-template-columns:1fr 1fr;background:var(--sunk);border-radius:999px;padding:4px;gap:4px}
 .seg button{font:700 1.02rem var(--body);border:0;background:transparent;color:var(--ink);padding:11px 8px;border-radius:999px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
-.modebar .glb>.btn.mod{width:100%;justify-content:center;text-align:center;border-width:2px;padding:10px 12px;font-size:.95rem;background:var(--bg)}
-.modebar .gl{margin:10px 0 0}
+.glb{margin:0 0 8px}
+.glb>.btn.mod{width:100%;justify-content:center;text-align:center;border-width:2px;padding:10px 12px;font-size:.95rem;background:var(--bg)}
+.glb .gl{margin:10px 0 0}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
 .chip{font:600 .85rem var(--body);border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:6px 12px;border-radius:999px;cursor:pointer;text-align:left}
 .chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
@@ -290,7 +291,7 @@ var GTAB={
 };
 
 /* ---------- componentes ---------- */
-function modeBar(tab,nombre){ return h("div",{class:"modebar"},h("div",{class:"mb-l",text:"¿Qué querés hacer?"}),seg(tab),glosario(tab,nombre)); }
+function modeBar(tab,nombre){ return h("div",null,h("div",{class:"modebar"},h("div",{class:"mb-l",text:"¿Qué querés hacer?"}),seg(tab)),glosario(tab,nombre)); }
 function seg(tab){
   var m=S.mode[tab]||"estudiar";
   function b(id,l){ return h("button",{type:"button","aria-pressed":String(m===id),text:l,onclick:function(){S.mode[tab]=id;save();render();window.scrollTo(0,0);}}); }
