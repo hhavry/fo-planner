@@ -6,6 +6,8 @@ Archivo de contexto para quien retome esta app (una persona o un asistente de IA
 
 App web de estudio de Front Office para alumnos de primer año de la materia **Departamento de Front Office y Housekeeping (2.6.106)**, 2026. La docente es Helena Havrylets.
 
+En la app se llama **«Front Office»** (título y pestaña del navegador): pedido de la docente. «FO Planner» queda solo como nombre del repositorio y del proyecto.
+
 Es la app **hermana de HK Planner** (Housekeeping): misma estructura, mismo hotel ficticio, mismas reglas de trabajo, con la paleta en verdes.
 
 - Repositorio: https://github.com/hhavry/fo-planner (rama `main`)
